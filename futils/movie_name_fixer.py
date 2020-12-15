@@ -18,7 +18,7 @@ if not os.path.exists(target_path) or not os.path.isdir(target_path):
     sys.exit('Verify that provided path is a valid directory')
 
 ## Filter files to removed undesired ones
-def _ignored_extensions = [
+_ignored_extensions = [
     '.DS_Store',
     '.DS_Store',
     '.part'
