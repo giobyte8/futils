@@ -17,11 +17,19 @@ if not os.path.exists(target_path) or not os.path.isdir(target_path):
     print('Provied path seems to be invalid: {}'.format(target_path))
     sys.exit('Verify that provided path is a valid directory')
 
-## Get all files from dir and iterate
-target_files = [f for f in os.listdir(target_path) if os.path.isfile(os.path.join(target_path, f))]
+## Filter files to removed undesired ones
+def _ignored_extensions = [
+    '.DS_Store',
+    '.DS_Store',
+    '.part'
+]
+target_files = []
+for file in os.listdir(target_path):
+    if (os.path.isfile(os.path.join(target_path, file))):
+        if (os.path.splitext(file)[1] not in _ignored_extensions):
+            target_files.append(file)
 
 print('Starting with rename of {} files'.format(len(target_files)))
-
 for file in target_files:
     print('\n> {}'.format(file))
     movieName = input('Enter movie name: ')
