@@ -6,7 +6,27 @@ class InvalidPathError(Exception):
     pass
 
 
-def is_dir(path: str):
+class DirectoryAlreadyExistsError(Exception):
+    pass
+
+
+def file_name(path: str, include_extension=True) -> str:
+    """
+    Retrieves the filename of provided path
+
+    :param path: Path to file
+    """
+    if is_dir(path):
+        raise InvalidPathError()
+
+    basename = os.path.basename(path)
+    if include_extension:
+        return basename
+    else:
+        return os.path.splitext(basename)[0]
+
+
+def is_dir(path: str) -> bool:
     """
     Verifies that provided path exists as a directory
     in os filesystem
