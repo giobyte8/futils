@@ -10,7 +10,7 @@ class DirectoryAlreadyExistsError(Exception):
     pass
 
 
-def file_name(path: str, include_extension=True) -> str:
+def get_file_name(path: str, include_extension=True) -> str:
     """
     Retrieves the filename of provided path
 
