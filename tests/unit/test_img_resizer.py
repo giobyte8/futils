@@ -6,6 +6,9 @@ import uuid
 
 from PIL import Image
 from pathlib import Path
+from unittest import mock
+
+import futils
 
 from futils.img_resizer import (
     TargetSizeError,
@@ -71,6 +74,12 @@ def _unique_str():
 
 
 class TestResizeImages:
+    def mock_eval_preview_result_abort(self, preview_result):
+            preview_result.execute = False
+
+    def mock_resize_img_do_nothing(src_file, w, h, dst_dir):
+        return src_file
+
     def test_resize_images_wrong_width(self):
         with pytest.raises(TargetSizeError):
             resize_images(None, 319, 1080)
@@ -78,6 +87,22 @@ class TestResizeImages:
     def test_resize_images_wrong_height(self):
         with pytest.raises(TargetSizeError):
             resize_images(None, 1920, 479)
+
+    @mock.patch('futils.img_resizer._resize')
+    def test_resize_images_aborted_by_user(self, mock_resize, tmp_dir):
+        with mock.patch.object(
+            futils.img_resizer,
+            '_evaluate_preview_result',
+            new=self.mock_eval_preview_result_abort
+        ):
+            resize_result = resize_images(
+                tmp_dir,
+                1920,
+                1080
+            )
+
+        assert not resize_result
+        mock_resize.assert_not_called()
 
 
 class TestResize:
