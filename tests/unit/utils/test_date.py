@@ -1,6 +1,6 @@
 import pytest
 
-from futils.utils.date import InvalidFormatError, parse_date
+from fu.utils.date import InvalidFormatError, parse_date
 
 def test_parse_date_full_date():
     patterns = [

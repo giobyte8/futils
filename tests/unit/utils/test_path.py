@@ -1,4 +1,4 @@
-from futils.utils.path import (
+from fu.utils.path import (
     get_file_name
 )
 

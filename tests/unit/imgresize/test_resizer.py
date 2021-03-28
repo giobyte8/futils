@@ -8,9 +8,9 @@ from PIL import Image
 from pathlib import Path
 from unittest import mock
 
-import futils
+import fu
 
-from futils.img_resizer.resizer import (
+from fu.imgresize.resizer import (
     TargetSizeError,
     ResizeOrder,
     resize_images,
@@ -74,8 +74,8 @@ def _unique_str():
 
 
 class TestResizeImages:
-    def mock_eval_preview_result_abort(self, preview_result):
-            preview_result.execute = False
+    def mock_eval_resize_order_abort(self, order):
+            order.execute = False
 
     def mock_resize_img_do_nothing(src_file, w, h, dst_dir):
         return src_file
@@ -88,12 +88,12 @@ class TestResizeImages:
         with pytest.raises(TargetSizeError):
             resize_images(None, 1920, 479)
 
-    @mock.patch('futils.img_resizer.resizer._resize')
+    @mock.patch('fu.imgresize.resizer._resize')
     def test_resize_images_aborted_by_user(self, mock_resize, tmp_dir):
         with mock.patch.object(
-            futils.img_resizer.resizer,
-            '_evaluate_preview_result',
-            new=self.mock_eval_preview_result_abort
+            fu.imgresize.resizer,
+            '_evaluate_resize_order',
+            new=self.mock_eval_resize_order_abort
         ):
             resize_result = resize_images(
                 tmp_dir,

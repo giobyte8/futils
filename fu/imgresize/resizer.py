@@ -1,13 +1,15 @@
 import os
+
 from PIL import Image
 from pathlib import Path
+from resizeimage import resizeimage
 from dataclasses import (
     dataclass,
     field
 )
-from resizeimage import resizeimage
 
-from futils.utils.path import (
+from fu.utils.console import console
+from fu.utils.path import (
     get_file_name,
     is_dir,
     path_files
@@ -15,6 +17,8 @@ from futils.utils.path import (
 
 
 _img_formats = ['.png', '.jpg', '.jpeg']
+_MIN_WIDTH = 320
+_MIN_HEIGHT = 480
 
 @dataclass
 class ResizeOrder:
@@ -80,15 +84,15 @@ def resize_images(
         tgt_height: int,
         dst_dir: str = None
     ) -> None:
-    
-    if tgt_width < 320 or tgt_height < 480:
-        raise TargetSizeError()
 
     resize_order = ResizeOrder(src_dir, tgt_width, tgt_height, dst_dir)
-    _evaluate_preview_result(_preview_resize(resize_order))
+    _evaluate_resize_order(_preview_resize(resize_order))
 
+    return None
     if not resize_order.execute:
         return None
+
+    # TODO Verify right dimensions
 
     if not resize_order.dst_dir:
         resize_order.dst_dir = _make_destination_dir_uri(
@@ -136,7 +140,7 @@ def _resize(src_file: str, tgt_width: int, tgt_height: int, dst_dir: str):
     Returns:
         str: Path to resized image file
     """
-    if tgt_width < 320 or tgt_height < 480:
+    if tgt_width < _MIN_WIDTH or tgt_height < _MIN_HEIGHT:
         raise TargetSizeError()
 
     dst_file = ''
@@ -169,11 +173,15 @@ def _preview_resize(resize_order: ResizeOrder) -> ResizeOrder:
         ResizeOrder: Resize order with images and errors updated
     """
 
-    if resize_order.tgt_width < 320:
-        resize_order.gral_errors.append('Minimal supported width is 320px')
+    if resize_order.tgt_width < _MIN_WIDTH:
+        resize_order.gral_errors.append('Minimal supported width is {}px'.format(
+            _MIN_WIDTH
+        ))
 
-    if resize_order.tgt_height < 480:
-        resize_order.gral_errors.append('Minimal supported height is 480px')
+    if resize_order.tgt_height < _MIN_HEIGHT:
+        resize_order.gral_errors.append('Minimal supported height is {}px'.format(
+            _MIN_HEIGHT
+        ))
     
     if resize_order.gral_errors:
         return resize_order
@@ -223,23 +231,26 @@ def _preview_resize(resize_order: ResizeOrder) -> ResizeOrder:
     return resize_order
 
 
-def _evaluate_preview_result(resize_order: ResizeOrder) -> ResizeOrder:
-    """Evaluates preview result and shows errors or warnings
-    to user. If there are warnings, will ask user if should
-    proceed or cancel resize
+def _evaluate_resize_order(order: ResizeOrder) -> ResizeOrder:
+    """Evaluates resize order (After preview operation) and shows
+    errors or warnings to user. If there are warnings, will ask
+    user if should proceed or abort resize operation
 
     Args:
-        result (PreviewResult): Resize preview results
+        order (PreviewResult): Resize preview result
 
     Returns:
-        ResizeOrder: Indicates if resize should proceed proceed
+        ResizeOrder: Updated object indicating if resize should
+        proceed or not
     """
-    if not result.gral_errors and not result.has_warnings():
-        return True
+    #if not result.gral_errors and not result.has_warnings():
+    #    return True
     
-    if result.gral_errors:
-        # TODO Show errors
-        return False
+    if order.gral_errors:
+        console.print(order.gral_errors, 'error')
+
+        order.execute = False
+        return order
 
     if result.invalid_images:
         # TODO Show invalid images

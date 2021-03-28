@@ -1,6 +1,14 @@
 import typer
 
-def main(
+from fu.imgresize.resizer import (
+    resize_images
+)
+
+
+app = typer.Typer()
+
+@app.command()
+def imgresize(
     src_dir: str = typer.Argument(
         "./",
         help="Directory containing images to resize"
@@ -27,7 +35,7 @@ def main(
     """Resize images to smaller resolution applying same effect
     as css 'cover'
     """
-    typer.echo(f"Converting {src_dir}")
+    resize_images(src_dir, tgt_width, tgt_height, dst_dir)
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()
