@@ -10,7 +10,7 @@ from unittest import mock
 
 import futils
 
-from futils.img_resizer import (
+from futils.img_resizer.resizer import (
     TargetSizeError,
     ResizeOrder,
     resize_images,
@@ -88,10 +88,10 @@ class TestResizeImages:
         with pytest.raises(TargetSizeError):
             resize_images(None, 1920, 479)
 
-    @mock.patch('futils.img_resizer._resize')
+    @mock.patch('futils.img_resizer.resizer._resize')
     def test_resize_images_aborted_by_user(self, mock_resize, tmp_dir):
         with mock.patch.object(
-            futils.img_resizer,
+            futils.img_resizer.resizer,
             '_evaluate_preview_result',
             new=self.mock_eval_preview_result_abort
         ):
