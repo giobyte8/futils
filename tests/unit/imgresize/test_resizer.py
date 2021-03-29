@@ -80,14 +80,6 @@ class TestResizeImages:
     def mock_resize_img_do_nothing(src_file, w, h, dst_dir):
         return src_file
 
-    def test_resize_images_wrong_width(self):
-        with pytest.raises(TargetSizeError):
-            resize_images(None, 319, 1080)
-
-    def test_resize_images_wrong_height(self):
-        with pytest.raises(TargetSizeError):
-            resize_images(None, 1920, 479)
-
     @mock.patch('fu.imgresize.resizer._resize')
     def test_resize_images_aborted_by_user(self, mock_resize, tmp_dir):
         with mock.patch.object(

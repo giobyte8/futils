@@ -3,6 +3,8 @@ import os
 from PIL import Image
 from pathlib import Path
 from resizeimage import resizeimage
+from rich.table import Table
+from rich.prompt import Prompt
 from dataclasses import (
     dataclass,
     field
@@ -88,11 +90,8 @@ def resize_images(
     resize_order = ResizeOrder(src_dir, tgt_width, tgt_height, dst_dir)
     _evaluate_resize_order(_preview_resize(resize_order))
 
-    return None
     if not resize_order.execute:
         return None
-
-    # TODO Verify right dimensions
 
     if not resize_order.dst_dir:
         resize_order.dst_dir = _make_destination_dir_uri(
@@ -111,18 +110,18 @@ def resize_images(
     for resize_img in resize_order.ok_images:
         resize_img.dst_file = _resize(
             resize_img.src_file,
-            tgt_width,
-            tgt_height,
-            dst_dir
+            resize_order.tgt_width,
+            resize_order.tgt_height,
+            resize_order.dst_dir
         )
 
-    if resize_order.overwritten_images and resize_order.overwrite_allowed:
-        for resize_img in resize_order.overwritten_images:
+    if resize_order.overwrite:
+        for resize_img in resize_order.existent_images:
             resize_img.dst_file = _resize(
                 resize_img.src_file,
-                tgt_width,
-                tgt_height,
-                dst_dir
+                resize_order.tgt_width,
+                resize_order.tgt_height,
+                resize_order.dst_dir
             )
         
 
@@ -199,11 +198,17 @@ def _preview_resize(resize_order: ResizeOrder) -> ResizeOrder:
             img_w, img_h = img.size
             
             if img_w < resize_order.tgt_width:
-                resize_order.invalid_images.append(img_file)
+                resize_order.invalid_images.append(ResizedImg(
+                    src_file=img_file,
+                    dst_file=None
+                ))
                 continue
             
             if img_h < resize_order.tgt_height:
-                resize_order.invalid_images.append(img_file)
+                resize_order.invalid_images.append(ResizedImg(
+                    src_file=img_file,
+                    dst_file=None
+                ))
                 continue
 
             destination = _make_destination_uri(
@@ -215,53 +220,147 @@ def _preview_resize(resize_order: ResizeOrder) -> ResizeOrder:
             if Path(destination).exists():
                 resize_order.existent_images.append(ResizedImg(
                     src_file=img_file,
-                    dst_file=None
+                    dst_file=destination
                 ))
 
             else:
                 resize_order.ok_images.append(ResizedImg(
                     src_file=img_file,
-                    dst_file=None
+                    dst_file=destination
                 ))
 
     # Verify there are images to resize
     if not resize_order.ok_images and not resize_order.existent_images:
-        resize_order.gral_errors.append('Valid images for resize not found')
+        resize_order.gral_errors.append(
+            'No valid images were found at {}'.format(resize_order.src_dir)
+        )
 
     return resize_order
 
 
-def _evaluate_resize_order(order: ResizeOrder) -> ResizeOrder:
+def _evaluate_resize_order(order: ResizeOrder, verbose=False) -> ResizeOrder:
     """Evaluates resize order (After preview operation) and shows
     errors or warnings to user. If there are warnings, will ask
     user if should proceed or abort resize operation
 
     Args:
         order (PreviewResult): Resize preview result
+        verbose (bool): If true, will print a detailed table of every \
+            found image. Default: False
 
     Returns:
         ResizeOrder: Updated object indicating if resize should
         proceed or not
     """
-    #if not result.gral_errors and not result.has_warnings():
-    #    return True
     
     if order.gral_errors:
-        console.print(order.gral_errors, 'error')
+        for error in order.gral_errors:
+            console.print(error, style='error')
 
         order.execute = False
         return order
 
-    if result.invalid_images:
-        # TODO Show invalid images
-        pass
+    if not order.has_warnings():
+        order.execute = True
+        return order
 
-    if result.existent_images:
-        # TODO Show existent images
-        pass
+    if verbose:
+        table = Table()
+        table.add_column('Image file', justify='right')
+        table.add_column('Status')
 
-    # TODO Show resume X Images will be transformed, X Iamges will be overriden
-    # TODO Ask user for confirmation
+        for img in order.ok_images:
+            table.add_row(get_file_name(img.src_file), '[green]Ok')
+
+        for img in order.existent_images:
+            table.add_row(get_file_name(img.src_file), '[yellow]Existent')
+
+        for img in order.invalid_images:
+            table.add_row(get_file_name(img.src_file), '[red]Too small')
+        
+        console.print()
+        console.print(table)
+
+    # Print summary
+    console.print('\nResize summary:')
+    if order.ok_images:
+        console.print(
+            ' {} {} can be resized without issues'.format(
+                len(order.ok_images),
+                ('Images' if len(order.ok_images) > 1 else 'Image')
+            ),
+            style='success'
+        )
+    if order.existent_images:
+        console.print(
+            ' {} {} will override destination {}'.format(
+                len(order.existent_images),
+                ('Images' if len(order.existent_images ) > 1 else 'Image'),
+                ('files' if len(order.existent_images) > 1 else 'file')
+            ),
+            style='warning'
+        )
+    if order.invalid_images:
+        console.print(
+            ' {} {} will not be resized'.format(
+                len(order.invalid_images),
+                ('Images' if len(order.invalid_images ) > 1 else 'Image')
+            ),
+            style='error'
+        )
+        
+    # Ask for confirmation
+    user_choice = ''
+    console.print('\nEnter your choice')
+    console.print(' 0. Abort')
+    console.print(' 1. View details')
+
+    if order.existent_images:
+        if order.ok_images:
+            console.print(' 2. Resize all images (Overwrite existent)')
+            console.print(' 3. Resize only safe images (Don\'t overwrite)')
+            user_choice = Prompt.ask(
+                'Your choice',
+                choices=['0', '1', '2', '3'],
+                default='3'
+            )
+
+            if user_choice == '3':
+                order.overwrite = False
+                order.execute = True
+
+        # All images are existent or invalid
+        else:
+            console.print(' 2. Resize valid images (Overwrite existent)')
+            user_choice = Prompt.ask(
+                'Your choice',
+                choices=['0', '1', '2'],
+                default='2'
+            )
+
+        if user_choice == '2':
+            order.overwrite = True
+            order.execute = True
+
+    # All images are valid or invalid (No existent images)
+    else:
+        console.print(' 2. Resize all valid images')
+        user_choice = Prompt.ask(
+            'Your choice',
+            choices=['0', '1', '2'],
+            default='2'
+        )
+
+        if user_choice == '2':
+            order.execute = True    
+
+    if user_choice == '0':
+        console.print('\nAborting resize', style='info')
+        order.execute = False
+    elif user_choice == '1':
+        return _evaluate_resize_order(order, verbose=True)
+
+    return order
 
 
 def _make_destination_uri(src_file: str, dst_dir: str,
@@ -290,8 +389,7 @@ def _make_destination_uri(src_file: str, dst_dir: str,
     )
 
 
-def _make_destination_dir_uri(source_dir: str, width: int,
-                              height: int):
+def _make_destination_dir_uri(source_dir: str, width: int, height: int):
     """Creates destination directory uri
 
     Args:

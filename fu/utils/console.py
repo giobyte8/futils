@@ -3,8 +3,9 @@ from rich.theme import Theme
 
 theme = Theme({
     "info" : "dim cyan",
-    "warning": "magenta",
-    "danger": "bold red"
+    "success": "green",
+    "warning": "orange1",
+    "error": "red"
 })
 
 console = Console(theme=theme)
