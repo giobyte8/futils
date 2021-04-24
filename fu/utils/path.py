@@ -26,6 +26,22 @@ def get_file_name(path: str, include_extension=True) -> str:
         return os.path.splitext(basename)[0]
 
 
+def get_file_ext(path: str) -> str:
+    """Get extension of provided file
+
+    Args:
+        path (str): File path
+
+    Returns:
+        str: File extension or empty string for files \
+                without extension
+    """
+    if not os.path.isfile(path):
+        raise InvalidPathError()
+
+    return Path(path).suffix
+
+
 def is_dir(path: str) -> bool:
     """
     Verifies that provided path exists as a directory
