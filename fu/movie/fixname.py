@@ -24,15 +24,15 @@ _movie_formats = ['.mkv', '.mp4', '.avi', '.wmv']
 
 @dataclass
 class MovieFile:
+    src_file: str
 
     title: str
     year: int
-    resolution: str
-    audio_lang: str
-    extra_comment: str
-
-    src_file: str
-    file_ext: str
+    resolution: str = None
+    audio_lang: str = None
+    extra_comment: str = None
+    
+    file_ext: str = None
 
     def make_file_name(self) -> str:
         """Creates file name for this movie using format:  \
@@ -76,7 +76,10 @@ class MovieFile:
         return os.path.join(dir_path, file_name)
 
     def is_valid(self) -> bool:
-        return os.path.isfile(self.src_file) \
+
+
+        return self.src_file \
+                and os.path.isfile(self.src_file) \
                 and self.title \
                 and self.year
 
@@ -84,7 +87,7 @@ class MovieFile:
 @dataclass
 class RenameOrder:
     movies: list = field(default_factory=list)
-    dst_existent_movies = field(default_factory=list)
+    dst_existent_movies: list = field(default_factory=list)
     skipped_files: list = field(default_factory=list)
 
     errors: list = field(default_factory=list)
