@@ -76,8 +76,6 @@ class MovieFile:
         return os.path.join(dir_path, file_name)
 
     def is_valid(self) -> bool:
-
-
         return self.src_file \
                 and os.path.isfile(self.src_file) \
                 and self.title \
