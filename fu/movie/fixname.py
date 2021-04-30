@@ -50,10 +50,16 @@ class MovieFile:
             name += ' - {}'.format(self.resolution)
 
         if self.audio_lang:
-            name += ' {}'.format(self.audio_lang)
+            name += '{} {}'.format(
+                ('' if self.resolution else ' -'),
+                self.audio_lang
+            )
 
         if self.extra_comment:
-            name += ' {}'.format(self.extra_comment)
+            name += '{} {}'.format(
+                ('' if self.resolution or self.audio_lang else ' -'),
+                self.extra_comment
+            )
 
         # Verify extension existence
         if self.file_ext:
@@ -82,17 +88,38 @@ class MovieFile:
                 and self.year
 
 
-@dataclass
 class RenameOrder:
-    movies: list = field(default_factory=list)
-    dst_existent_movies: list = field(default_factory=list)
-    skipped_files: list = field(default_factory=list)
+    src_dir: str
 
-    errors: list = field(default_factory=list)
-    warnings: list = field(default_factory=list)
+    movies: list = []
+    dst_existent_movies: list = []
+    skipped_files: list = []
+
+    errors: list = []
+    warnings: list = []
 
     execute: bool = False
     overwrite: bool = False
+
+    def __init__(self, src_dir: str) -> None:
+        """Initalizes order object
+
+        Args:
+            src_dir (str): Path to directory containing movies to \
+                rename
+        """
+        self.src_dir = src_dir
+
+    def scan_src_dir(self) -> None:
+        """Scans provided directory for movie files and ask user for  \
+            movie info.
+
+        Args:
+            interactive (bool, optional): [description]. Defaults to False.
+        """
+        # TODO Migrate functionality from outer method
+        # TODO Migrate all remaining outer methods into class
+        pass
 
     def has_errors(self) -> bool:
         if not self.movies and not self.dst_existent_movies:
