@@ -86,17 +86,8 @@ class MovieFile:
 
 
 class RenameOrder:
-    src_dir: str
-
-    movies: list = []
-    dst_existent_movies: list = []
-    skipped_files: list = []
-
-    errors: list = []
-    warnings: list = []
-
-    execute: bool = False
-    overwrite: bool = False
+    """Represents a rename movie files operation
+    """ 
 
     def __init__(self, src_dir: str) -> None:
         """Initalizes order object
@@ -106,6 +97,16 @@ class RenameOrder:
                 rename
         """
         self.src_dir = src_dir
+
+        self.movies: list = []
+        self.dst_existent_movies: list = []
+        self.skipped_files: list = []
+
+        self.errors: list = []
+        self.warnings: list = []
+
+        self.execute: bool = False
+        self.overwrite: bool = False
 
     def scan_src_dir(self) -> None:
         """Scans provided directory for movie files and ask user for  \
@@ -251,7 +252,7 @@ class RenameOrder:
 
     def has_errors(self) -> bool:
         if not self.movies and not self.dst_existent_movies:
-            self.warnings.append('No files to rename')
+            self.errors.append('No files to rename')
         
         return len(self.errors) > 0
 
