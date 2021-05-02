@@ -193,7 +193,7 @@ class RenameOrder:
         else:
             self.execute = Confirm.ask('Confirm rename operation?')
     
-    def execute(self) -> None:
+    def apply(self) -> None:
         """Applies rename operations based on user preferences
         """
         if not self.execute:
