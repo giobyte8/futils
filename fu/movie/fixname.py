@@ -1,9 +1,6 @@
 import os
 
-from dataclasses import (
-    dataclass,
-    field
-)
+from dataclasses import dataclass
 from rich.prompt import (
     Confirm,
     IntPrompt,
@@ -112,14 +109,145 @@ class RenameOrder:
 
     def scan_src_dir(self) -> None:
         """Scans provided directory for movie files and ask user for  \
-            movie info.
-
-        Args:
-            interactive (bool, optional): [description]. Defaults to False.
+            movie info. \
+            
+            Scanned files will be stored into: movies, dst_existent_movies \
+            and skipped_files lists.
         """
-        # TODO Migrate functionality from outer method
-        # TODO Migrate all remaining outer methods into class
-        pass
+        console.print('Looking for movie files at: {}'.format(self.src_dir))
+
+        for movie_file in path_files(self.src_dir, extensions=_movie_formats):
+            src_file_name = get_file_name(movie_file)
+
+            # Confirm rename request
+            console.print('\n File found: {}'.format(src_file_name))
+            rename_approved = Confirm.ask('Rename file?')
+
+            if rename_approved:
+                movie = self._ask_movie_details(src_file_name)
+                movie.file_ext = get_file_ext(src_file_name)
+                movie.src_file = movie_file
+
+                # Wether destination file already exists
+                if os.path.isfile(movie.make_target_file_path()):
+                    self.dst_existent_movies.append(movie)
+
+                # Movie can be renamed without issues
+                else:
+                    self.movies.append(movie)
+            
+            # Skipped file
+            else:
+                self.skipped_files.append(src_file_name)
+    
+    def evaluate_rename_order(self) -> None:
+        """Shows rename order to user (including warnings/errors)    \
+            and ask for confirmation to proceed and execute rename   \
+            operations.
+
+            If order has errors, it will be printed and execution    \
+            will be set to false.
+        """
+        if self.has_errors():
+            for error in self.errors:
+                console.print(error, style='error')
+            self.execute = False
+            return None
+
+        self._print_preview()
+        
+        if self.has_warnings():
+            for warn in self.warnings:
+                console.print(warn, style='warning')
+
+            console.print()
+            console.print('0. Abort operation')
+            console.print('1. Rename only safe files')
+            console.print('2. Rename all and overwrite existent files')
+            user_choice = Prompt.ask(
+                'Enter your choice: ',
+                choices=['0', '1', '2'],
+                default='1'
+            )
+
+            if user_choice == 0:
+                self.execute = False
+            elif user_choice == 1:
+                self.overwrite = False
+                self.execute = True
+            elif user_choice == 2:
+                self.overwrite = True
+                self.execute = True
+        
+        # Confirm operation execution
+        else:
+            self.execute = Confirm.ask('Confirm rename operation?')
+    
+    def execute(self) -> None:
+        """Applies rename operations based on user preferences
+        """
+        if not self.execute:
+            return None
+
+        for movie in self.movies:
+            os.replace(
+                movie.src_file,
+                movie.make_target_file_path()
+            )
+
+        if self.dst_existent_movies and self.overwrite:
+            os.replace(
+                movie.src_file,
+                movie.make_target_file_path()
+            )
+
+        console.print()
+        console.print('Rename operation is complete')
+
+    def _ask_movie_details(filename: str) -> MovieFile:
+        movie = MovieFile()
+
+        movie.title = Prompt.ask('Movie title: ')
+        movie.year = IntPrompt.ask('Year: ')
+        movie.resolution = Prompt.ask(
+            '[Resolution (eg: 720p|1080p|4k)]: ',
+            default=''
+        )
+        movie.lang = Prompt.ask(
+            '[Language (eg: Eng|Lat|Dual)]: ',
+            default=''
+        )
+        movie.extra = Prompt.ask(
+            '[Extra data (eg: HDR|Extended|3D)]: ',
+            default=''
+        )
+
+        return movie
+
+    def _print_preview(self) -> None:
+        """Prints a table with details about this rename order
+        """
+        table = Table()
+        table.add_column('Current file name', justify='center')
+        table.add_column('New file name', justify='center')
+        table.add_column('Status', justify='center')
+
+        for movie in self.movies:
+            table.add_row(
+                get_file_name(movie.src_file),
+                movie.make_file_name(),
+                'Ok'
+            )
+
+        for movie in self.dst_existent_movies:
+            table.add_row(
+                '[yellow]{}'.format(get_file_name(movie.src_file)),
+                '[yellow]{}'.format(movie.make_file_name()),
+                '[yellow]Existent'
+            )
+        
+        console.print()
+        console.print(table)
 
     def has_errors(self) -> bool:
         if not self.movies and not self.dst_existent_movies:
@@ -157,146 +285,9 @@ def rename_movies(src_dir: str) -> None:
             style='error'
         )
 
-    rename_order = _prepare_rename_order(src_dir)
-    _evaluate_rename_order(rename_order)
+    rename_order = RenameOrder(src_dir)
+    rename_order.scan_src_dir()
+    rename_order.evaluate_rename_order()
 
     if rename_order.execute:
-        pass
-        # Apply rename operations
-
-
-def _evaluate_rename_order(order: RenameOrder) -> None:
-    """Shows rename order to user (And possible warnings/errors) \
-        and ask for confirmation to proceed and execute rename   \
-        operations.
-
-        If order has errors, it will be printed and operation    \
-        will be cancelled.
-
-    Args:
-        order (RenameOrder): Order to display to user
-    """
-    if order.has_errors():
-        for error in order.errors:
-            console.print(error, style='error')
-        order.execute = False
-        return order
-
-    _print_preview(order)
-
-    if order.has_warnings():
-        for warn in order.warnings:
-            console.print(warn, style='warning')
-
-        console.print('0. Abort operation')
-        console.print('1. Rename only safe files')
-        console.print('2. Rename all and overwrite existent files')
-        user_choice = Prompt.ask(
-            'Enter your choice: ',
-            choices=['0', '1', '2'],
-            default='1'
-        )
-
-        if user_choice == 0:
-            order.execute = False
-        elif user_choice == 1:
-            order.overwrite = False
-            order.execute = True
-        elif user_choice == 2:
-            order.overwrite = True
-            order.execute = True
-    
-    # Confirm operation execution
-    else:
-        order.execute = Confirm.ask('Confirm rename operation?')
-
-
-def _print_preview(order: RenameOrder) -> None:
-    """Prints a table with all files to be renamed
-
-    Args:
-        order (RenameOrder): Rename operation
-    """
-    table = Table()
-    table.add_column('Current name', justify='center')
-    table.add_column('New name', justify='center')
-    table.add_column('Status', justify='center')
-
-    for movie in order.movies:
-        table.add_row(
-            get_file_name(movie.src_file),
-            movie.make_file_name(),
-            'Ok'
-        )
-
-    for movie in order.dst_existent_movies:
-        table.add_row(
-            '[yellow]{}'.format(get_file_name(movie.src_file)),
-            '[yellow]{}'.format(movie.make_file_name()),
-            '[yellow]Existent'
-        )
-    
-    console.print()
-    console.print(table)
-
-
-def _prepare_rename_order(src_dir: str) -> RenameOrder:
-    """Scans provided directory for movie files and ask user for  \
-        movie info. Creates a rename order. Rename is not applied.
-
-    Args:
-        src_dir (str): Path to directory containing movies to rename
-
-    Returns:
-        RenameOrder: Rename operation order
-    """
-    console.print('Looking for movie files at: {}'.format(src_dir))
-    rename_order = RenameOrder()
-
-    for movie_file in path_files(src_dir, extensions=_movie_formats):
-        src_file_name = get_file_name(movie_file)
-
-        # Confirm rename request
-        console.print('\n File found: {}'.format(src_file_name))
-        rename_approved = Confirm.ask('Rename file?')
-
-        if rename_approved:
-            movie = _ask_movie_details(src_file_name)
-            movie.file_ext = get_file_ext(src_file_name)
-            movie.src_file = movie_file
-
-            # Destination file already exists
-            if os.path.isfile(movie.make_target_file_path()):
-                rename_order.dst_existent_movies.append(movie)
-
-            # Movie can be renamed without issues
-            else:
-                rename_order.movies.append(movie)
-        else:
-            rename_order.skipped_files.append(src_file_name)
-    
-    return rename_order
-    
-
-def _ask_movie_details(filename: str) -> MovieFile:
-    movie = MovieFile()
-
-    movie.title = Prompt.ask('Movie title: ')
-    movie.year = IntPrompt.ask('Year: ')
-    movie.resolution = Prompt.ask(
-        '[Resolution (eg: 720p|1080p|4k)]: ',
-        default=''
-    )
-    movie.lang = Prompt.ask(
-        '[Language (eg: Eng|Lat|Dual)]: ',
-        default=''
-    )
-    movie.extra = Prompt.ask(
-        '[Extra data (eg: HDR|Extended|3D)]: ',
-        default=''
-    )
-
-    return movie
-
-
-
+        rename_order.execute()
