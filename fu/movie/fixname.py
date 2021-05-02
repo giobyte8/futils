@@ -206,10 +206,11 @@ class RenameOrder:
             )
 
         if self.dst_existent_movies and self.overwrite:
-            os.replace(
-                movie.src_file,
-                movie.make_target_file_path()
-            )
+            for movie in self.dst_existent_movies:
+                os.replace(
+                    movie.src_file,
+                    movie.make_target_file_path()
+                )
 
         console.print()
         console.print('Rename operation is complete')

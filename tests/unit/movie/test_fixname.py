@@ -5,6 +5,7 @@ import tempfile
 import uuid
 
 from pathlib import Path
+from unittest import mock
 
 from fu.movie.fixname import (
     MissingRequiredDataError, MovieFile, RenameOrder
@@ -218,8 +219,8 @@ class TestMovieFile:
 
 class TestRenameOrder:
     def test_has_errors_no_errors(self, tmp_dir, tmp_file):
-        movie = MovieFile(tmp_file, 'Gladiator', 1999)
-        movie2 = MovieFile(tmp_file, 'Interstellar', 2018)
+        movie = MovieFile(tmp_file.name, 'Gladiator', 1999)
+        movie2 = MovieFile(tmp_file.name, 'Interstellar', 2018)
 
         rename_order = RenameOrder(src_dir=tmp_dir)
         rename_order.movies.append(movie)
@@ -236,9 +237,70 @@ class TestRenameOrder:
         assert not rename_order.has_warnings()
     
     def test_has_warnings(self, tmp_dir, tmp_file):
-        movie = MovieFile(tmp_file, 'Gladiator', 1999)
+        movie = MovieFile(tmp_file.name, 'Gladiator', 1999)
         
         rename_order = RenameOrder(src_dir=tmp_dir)
         rename_order.dst_existent_movies.append(movie)
 
         assert rename_order.has_warnings()
+
+    @mock.patch('fu.movie.fixname.os.replace')
+    def test_apply_non_approved(self, mock_replace, tmp_dir, tmp_file):
+        movie = MovieFile(tmp_file.name, 'Gladiator', 1999)
+
+        rename_order = RenameOrder(src_dir=tmp_dir)
+        rename_order.movies.append(movie)
+
+        # Assert execute returns none
+        assert rename_order.apply() is None
+
+        # Assert no rename operation was executed
+        mock_replace.assert_not_called()
+    
+    @mock.patch('fu.movie.fixname.os.replace')
+    def test_apply_not_overwrite(self, mock_replace, tmp_dir, tmp_file):
+        gladiator = MovieFile(tmp_file.name, 'Gladiator', 1999)
+        interstellar = MovieFile(tmp_file.name, 'Interstellar', 2018)
+
+        rename_order = RenameOrder(src_dir=tmp_dir)
+        rename_order.movies.append(gladiator)
+        rename_order.dst_existent_movies.append(interstellar)
+        rename_order.execute = True
+
+        rename_order.apply()
+    
+        # Assert only interstellar was renamed
+        mock_replace.assert_called_once_with(
+            tmp_file.name,
+            gladiator.make_target_file_path()
+        )
+    
+    @mock.patch('fu.movie.fixname.os.replace')
+    def test_apply_overwrite(self, mock_replace, tmp_dir, tmp_file):
+        gladiator = MovieFile(tmp_file.name, 'Gladiator', 1999)
+        interstellar = MovieFile(tmp_file.name, 'Interstellar', 2018)
+
+        rename_order = RenameOrder(src_dir=tmp_dir)
+        rename_order.movies.append(gladiator)
+        rename_order.dst_existent_movies.append(interstellar)
+        rename_order.overwrite = True
+        rename_order.execute = True
+
+        rename_order.apply()
+        print(rename_order.movies)
+        print(rename_order.dst_existent_movies)
+
+        # Expected calls
+        calls = [
+            mock.call(
+                tmp_file.name,
+                gladiator.make_target_file_path()
+            ),
+            mock.call(
+                tmp_file.name,
+                interstellar.make_target_file_path()
+            )
+        ]
+    
+        # Assert both movies were renamed
+        mock_replace.assert_has_calls(calls, any_order=False)
