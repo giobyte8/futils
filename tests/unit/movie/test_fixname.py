@@ -7,7 +7,7 @@ import uuid
 from pathlib import Path
 
 from fu.movie.fixname import (
-    MissingRequiredDataError, MovieFile
+    MissingRequiredDataError, MovieFile, RenameOrder
 )
 
 
@@ -215,3 +215,30 @@ class TestMovieFile:
             )
 
             assert movie.is_valid()
+
+class TestRenameOrder:
+    def test_has_errors_no_errors(self, tmp_dir, tmp_file):
+        movie = MovieFile(tmp_file, 'Gladiator', 1999)
+        movie2 = MovieFile(tmp_file, 'Interstellar', 2018)
+
+        rename_order = RenameOrder(src_dir=tmp_dir)
+        rename_order.movies.append(movie)
+        rename_order.dst_existent_movies.append(movie2)
+
+        assert not rename_order.has_errors()
+
+    def test_has_errors(self, tmp_dir):
+        rename_order = RenameOrder(src_dir=tmp_dir)
+        assert rename_order.has_errors()
+
+    def test_has_warnings_no_warnings(self, tmp_dir):
+        rename_order = RenameOrder(src_dir=tmp_dir)
+        assert not rename_order.has_warnings()
+    
+    def test_has_warnings(self, tmp_dir, tmp_file):
+        movie = MovieFile(tmp_file, 'Gladiator', 1999)
+        
+        rename_order = RenameOrder(src_dir=tmp_dir)
+        rename_order.dst_existent_movies.append(movie)
+
+        assert rename_order.has_warnings()
