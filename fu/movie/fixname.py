@@ -7,6 +7,7 @@ from rich.prompt import (
     Prompt
 )
 from rich.table import Table
+from typing import List
 
 from fu.utils.console import console
 from fu.utils.path import (
@@ -98,15 +99,23 @@ class RenameOrder:
         """
         self.src_dir = src_dir
 
-        self.movies: list = []
-        self.dst_existent_movies: list = []
-        self.skipped_files: list = []
+        #: Movies that can be renamed without issue
+        self.movies: List[MovieFile] = []
 
-        self.errors: list = []
-        self.warnings: list = []
+        #: Movies whose destination file already exists
+        self.dst_existent_movies: List[MovieFile] = []
 
-        self.execute: bool = False
-        self.overwrite: bool = False
+        #: File names of skipped movie files
+        self.skipped_files: List[str] = []
+
+        self.errors: List[str] = []
+        self.warnings: List[str] = []
+
+        #: Indicates if rename execution is approved by user
+        self.execute = False
+
+        #: Indicates if overwrite of destination files is approved
+        self.overwrite = False
 
     def scan_src_dir(self) -> None:
         """Scans provided directory for movie files and ask user for  \
