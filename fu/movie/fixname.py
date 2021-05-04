@@ -61,7 +61,7 @@ class MovieFile:
 
         # Verify extension existence
         if self.file_ext:
-            name += '.{}'.format(self.file_ext)
+            name += '{}'.format(self.file_ext)
 
         return name
 
@@ -135,7 +135,7 @@ class RenameOrder:
 
             if rename_approved:
                 movie = self._ask_movie_details(src_file_name)
-                movie.file_ext = get_file_ext(src_file_name)
+                movie.file_ext = get_file_ext(movie_file)
                 movie.src_file = movie_file
 
                 # Wether destination file already exists
