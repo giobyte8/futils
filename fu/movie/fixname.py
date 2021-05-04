@@ -243,8 +243,8 @@ class RenameOrder:
         """Prints a table with details about this rename order
         """
         table = Table()
-        table.add_column('Current file name', justify='center')
-        table.add_column('New file name', justify='center')
+        table.add_column('Current file name', justify='right')
+        table.add_column('New file name', justify='left')
         table.add_column('Status', justify='center')
 
         for movie in self.movies:
