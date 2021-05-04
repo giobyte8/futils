@@ -134,7 +134,7 @@ class RenameOrder:
             rename_approved = Confirm.ask('Rename file?')
 
             if rename_approved:
-                movie = self._ask_movie_details(src_file_name)
+                movie = self._ask_movie_details(movie_file)
                 movie.file_ext = get_file_ext(movie_file)
                 movie.src_file = movie_file
 
@@ -215,11 +215,15 @@ class RenameOrder:
         console.print()
         console.print('Rename operation is complete')
 
-    def _ask_movie_details(filename: str) -> MovieFile:
-        movie = MovieFile()
+    def _ask_movie_details(self, src_file: str) -> MovieFile:
+        title = Prompt.ask('Movie title: ')
+        year = IntPrompt.ask('Year: ')
+        movie = MovieFile(
+            title=title,
+            year=year,
+            src_file=src_file
+        )
 
-        movie.title = Prompt.ask('Movie title: ')
-        movie.year = IntPrompt.ask('Year: ')
         movie.resolution = Prompt.ask(
             '[Resolution (eg: 720p|1080p|4k)]: ',
             default=''
