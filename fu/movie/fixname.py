@@ -228,7 +228,7 @@ class RenameOrder:
             '[Resolution (eg: 720p|1080p|4k)]: ',
             default=''
         )
-        movie.lang = Prompt.ask(
+        movie.audio_lang = Prompt.ask(
             '[Language (eg: Eng|Lat|Dual)]: ',
             default=''
         )
@@ -305,4 +305,4 @@ def rename_movies(src_dir: str) -> None:
     rename_order.evaluate_rename_order()
 
     if rename_order.execute:
-        rename_order.execute()
+        rename_order.apply()
