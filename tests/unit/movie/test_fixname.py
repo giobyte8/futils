@@ -116,7 +116,7 @@ class TestMovieFile:
         )
         movie.file_ext = ext
 
-        name = '{} ({}).{}'.format(title, year, ext)
+        name = '{} ({}){}'.format(title, year, ext)
         assert name == movie.make_file_name()
 
     def test_make_file_name_res_audio(self, tmp_file):
@@ -304,3 +304,124 @@ class TestRenameOrder:
     
         # Assert both movies were renamed
         mock_replace.assert_has_calls(calls, any_order=False)
+
+    @mock.patch('fu.utils.path.get_file_name')
+    @mock.patch('fu.movie.fixname.console.print')
+    def test_scan_src_dir_empty_dir(
+        self,
+        mock_cprint,
+        mock_get_file_name,
+        tmp_dir
+    ):
+        order = RenameOrder(src_dir=tmp_dir)
+        order.scan_src_dir()
+
+        mock_cprint.assert_called_once_with(
+            'Looking for movie files at: {}'.format(tmp_dir)
+        )
+        mock_get_file_name.assert_not_called()
+
+    @mock.patch('fu.movie.fixname.RenameOrder._ask_movie_details')
+    @mock.patch('fu.movie.fixname.Confirm.ask')
+    @mock.patch('fu.movie.fixname.console.print')
+    def test_scan_src_single_movie_unapproved(
+        self,
+        mock_cprint,
+        mock_ask,
+        mock_ask_movie_details,
+        tmp_dir
+    ):
+        # Create a fake movie file
+        filepath = os.path.join(tmp_dir, 'Gladiator.mkv')
+        open(filepath, 'a').close()
+
+        # Prepare mock return value
+        mock_ask.return_value = False
+
+        # Run scan on src dir
+        order = RenameOrder(src_dir=tmp_dir)
+        order.scan_src_dir()
+
+        assert not order.movies
+        assert len(order.skipped_files) == 1
+        assert mock_cprint.call_count == 2
+        mock_ask.assert_called_once_with('Rename file?')
+        mock_ask_movie_details.assert_not_called()
+
+    @mock.patch('fu.movie.fixname.RenameOrder._ask_movie_details')
+    @mock.patch('fu.movie.fixname.Confirm.ask')
+    @mock.patch('fu.movie.fixname.console.print')
+    def test_scan_src_single_movie_approved(
+        self,
+        mock_cprint,
+        mock_ask,
+        mock_ask_movie_details,
+        tmp_dir
+    ):
+        # Create a fake movie file
+        filepath = os.path.join(tmp_dir, 'Gladiator.mkv')
+        open(filepath, 'a').close()
+        
+        #
+        # Prepare mocks return values
+
+        gladiator = MovieFile(
+            title='Gladiator',
+            year=2000,
+            src_file=filepath
+        )
+
+        mock_ask_movie_details.return_value = gladiator
+        mock_ask.return_value = True
+
+        # Run scan on src dir
+        order = RenameOrder(src_dir=tmp_dir)
+        order.scan_src_dir()
+
+        assert not order.skipped_files
+        assert not order.dst_existent_movies
+        assert len(order.movies) == 1
+        assert order.movies[0] == gladiator
+
+        assert mock_cprint.call_count == 2
+        mock_ask.assert_called_once_with('Rename file?')
+        mock_ask_movie_details.assert_called_once_with('Gladiator.mkv')
+
+    @mock.patch('fu.movie.fixname.RenameOrder._ask_movie_details')
+    @mock.patch('fu.movie.fixname.Confirm.ask')
+    @mock.patch('fu.movie.fixname.console.print')
+    def test_scan_src_existent_movie(
+        self,
+        mock_cprint,
+        mock_ask,
+        mock_ask_movie_details,
+        tmp_dir
+    ):
+        # Create a fake movie file
+        filepath = os.path.join(tmp_dir, 'Gladiator (2000).mkv')
+        open(filepath, 'a').close()
+        
+        #
+        # Prepare mocks return values
+
+        gladiator = MovieFile(
+            title='Gladiator',
+            year=2000,
+            src_file=filepath
+        )
+
+        mock_ask_movie_details.return_value = gladiator
+        mock_ask.return_value = True
+
+        # Run scan on src dir
+        order = RenameOrder(src_dir=tmp_dir)
+        order.scan_src_dir()
+
+        assert not order.skipped_files
+        assert not order.movies
+        assert len(order.dst_existent_movies) == 1
+        assert order.dst_existent_movies[0] == gladiator
+
+        assert mock_cprint.call_count == 2
+        mock_ask.assert_called_once_with('Rename file?')
+        mock_ask_movie_details.assert_called_once_with('Gladiator (2000).mkv')
