@@ -4,6 +4,8 @@ from fu.imgresize.resizer import (
     resize_images
 )
 
+from fu.movie.fixname import rename_movies
+
 
 app = typer.Typer()
 
@@ -36,6 +38,17 @@ def imgresize(
     as css 'cover'
     """
     resize_images(src_dir, tgt_width, tgt_height, dst_dir)
+
+
+@app.command()
+def moviefixname(src_dir: str = typer.Argument(
+    "./",
+    help="Directory containing movie files to rename"
+)):
+    """Renames movie files to make them scanners friendly
+    """
+    rename_movies(src_dir)
+
 
 if __name__ == "__main__":
     app()
