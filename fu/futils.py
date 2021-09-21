@@ -1,9 +1,7 @@
 import typer
 
-from fu.imgresize.resizer import (
-    resize_images
-)
-
+from fu.imgresize.resizer import resize_images
+from fu.iterate_files import iterate_and_open
 from fu.movie.fixname import rename_movies
 
 
@@ -48,6 +46,25 @@ def moviefixname(src_dir: str = typer.Argument(
     """Renames movie files to make them scanners friendly
     """
     rename_movies(src_dir)
+
+
+@app.command()
+def iterate(
+    path: str = typer.Argument(
+        "./",
+        help="Directory containing files to iterate over"
+    ),
+    step: int = typer.Option(
+        1,
+        "--step",
+        "-s",
+        help="Number of files to open at a time"
+    )
+):
+    """Iterates all files in given path and opens them
+    in default system application
+    """
+    iterate_and_open(path, step)
 
 
 if __name__ == "__main__":
