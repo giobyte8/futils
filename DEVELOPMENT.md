@@ -2,13 +2,18 @@
 
 ## Dev environment setup
 
-* Setup python env and dependencies
-* Install in editable mode
-* Run unit tests
+1. Setup python env and dependencies
+2. Install in editable mode
+3. Run unit tests
+4. Happy coding 🚀
 
 ### Setup python env
 
 ```bash
+
+# Clone project if you haven't
+git clone https://github.com/giobyte8/futils
+cd futils
 
 # Initialize python virtual env through pyenv
 pyenv virtualenv 3.7.7 futils
@@ -44,3 +49,9 @@ From project root directory execute:
 ```bash
 pytest
 ```
+
+## Relase new version
+
+1. Update version number in `setup.py` file
+2. Create sources distribution with `python setup.py sdist`
+3. Upload through `twine upload dist/futils-<version>.tar.gz`

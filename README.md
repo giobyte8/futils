@@ -30,3 +30,7 @@ pip install futils
 ```
 
 > futils depends on python 3, in some systems you would want to use 'pip3' to install programs into python 3 environment
+
+## Development
+
+Check [Development section](./DEVELOPMENT.md)
