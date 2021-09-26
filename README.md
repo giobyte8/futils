@@ -5,15 +5,28 @@ media files
 
 ## Included programs
 
-* `imgresizer` Resize images to smaller resolutions applying same effect as
-  'cover' css
-* `rename-movie` Renames movie files to match format:
-  <Title> (Year) - <Resolution> <Audio Lang> <Extra>.<ext>
+* `imgresize` Resize images to smaller resolutions applying same effect as
+  'cover' css, useful for wallpapers and background images management
+* `iterate` Iterates files in a path and opens it in default application,
+   useful for review pictures or multiple docs in a folder
+* `moviefixname` Assists in the process of renaming movie files into a
+   format like `<Title> (Year) - <Resolution> - <Audio Lang> <Extra>.<ext>`.
+   Use this for your plex library 😉
 
 ## Usage
 
-### imgresizer
+To get details about arguments and usage of each command, use the `help` subprogram
 
-## Requirements
+```
+futils imgresize --help
+```
 
-* Python 3.7
+## Install
+
+### Using pip
+
+```
+pip install futils
+```
+
+> fu depends on python 3, in some systems you would want to use 'pip3' to install programs into python 3 environment
