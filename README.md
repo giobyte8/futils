@@ -18,7 +18,7 @@ media files
 To get details about arguments and usage of each command, use the `help` subprogram
 
 ```
-futils imgresize --help
+fu imgresize --help
 ```
 
 ## Install
@@ -29,4 +29,4 @@ futils imgresize --help
 pip install futils
 ```
 
-> fu depends on python 3, in some systems you would want to use 'pip3' to install programs into python 3 environment
+> futils depends on python 3, in some systems you would want to use 'pip3' to install programs into python 3 environment
