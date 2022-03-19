@@ -9,6 +9,7 @@ from rich.prompt import (
 from rich.table import Table
 from typing import List
 
+from fu.common.errors import MissingRequiredDataError
 from fu.utils.console import console
 from fu.utils.path import (
     get_file_name,
@@ -29,7 +30,7 @@ class MovieFile:
     resolution: str = None
     audio_lang: str = None
     extra_comment: str = None
-    
+
     file_ext: str = None
 
     def make_file_name(self) -> str:
@@ -88,7 +89,7 @@ class MovieFile:
 
 class RenameOrder:
     """Represents a rename movie files operation
-    """ 
+    """
 
     def __init__(self, src_dir: str) -> None:
         """Initalizes order object
@@ -120,7 +121,7 @@ class RenameOrder:
     def scan_src_dir(self) -> None:
         """Scans provided directory for movie files and ask user for  \
             movie info. \
-            
+
             Scanned files will be stored into: movies, dst_existent_movies \
             and skipped_files lists.
         """
@@ -145,11 +146,11 @@ class RenameOrder:
                 # Movie can be renamed without issues
                 else:
                     self.movies.append(movie)
-            
+
             # Skipped file
             else:
                 self.skipped_files.append(src_file_name)
-    
+
     def evaluate_rename_order(self) -> None:
         """Shows rename order to user (including warnings/errors)    \
             and ask for confirmation to proceed and execute rename   \
@@ -165,7 +166,7 @@ class RenameOrder:
             return None
 
         self._print_preview()
-        
+
         if self.has_warnings():
             for warn in self.warnings:
                 console.print(warn, style='warning')
@@ -188,11 +189,11 @@ class RenameOrder:
             elif user_choice == 2:
                 self.overwrite = True
                 self.execute = True
-        
+
         # Confirm operation execution
         else:
             self.execute = Confirm.ask('Confirm rename operation?')
-    
+
     def apply(self) -> None:
         """Applies rename operations based on user preferences
         """
@@ -260,31 +261,21 @@ class RenameOrder:
                 '[yellow]{}'.format(movie.make_file_name()),
                 '[yellow]Existent'
             )
-        
+
         console.print()
         console.print(table)
 
     def has_errors(self) -> bool:
         if not self.movies and not self.dst_existent_movies:
             self.errors.append('No files to rename')
-        
+
         return len(self.errors) > 0
 
     def has_warnings(self) -> bool:
         if self.dst_existent_movies:
             self.warnings.append('Some movie files will be overwriten')
-        
+
         return len(self.warnings) > 0
-
-
-class MissingRequiredDataError(Exception):
-    """Error indicates there are not enough info \
-        for renaming movie file
-
-    Args:
-        Exception (Exception): Python base exception
-    """
-    pass
 
 
 def rename_movies(src_dir: str) -> None:

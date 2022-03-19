@@ -76,3 +76,30 @@ def path_files(path: str, extensions = []):
                 file_ext = Path(file).suffix
                 if file_ext.lower() in extensions:
                     yield os.path.join(path, file)
+
+def count_path_files(path: str, extensions = []) -> int:
+    """Counts all files in given directory
+
+    Args:
+        path (str): Directory path
+        extensions (list, optional): If value is provided, only files with \
+            those extensions will be counted. Defaults to [].
+
+    Returns:
+        int: Found files count
+    """
+    if not is_dir(path):
+        raise InvalidPathError()
+
+    count = 0
+    for file in os.listdir(path):
+        if os.path.isfile(os.path.join(path, file)):
+            if not extensions:
+                count += 1
+
+            else:
+                file_ext = Path(file).suffix
+                if file_ext.lower() in extensions:
+                    count += 1
+
+    return count

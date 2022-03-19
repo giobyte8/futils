@@ -7,9 +7,8 @@ import uuid
 from pathlib import Path
 from unittest import mock
 
-from fu.movie.fixname import (
-    MissingRequiredDataError, MovieFile, RenameOrder
-)
+from fu.common.errors import MissingRequiredDataError
+from fu.movie.fixname import MovieFile, RenameOrder
 
 
 @pytest.fixture
@@ -56,14 +55,14 @@ class TestMovieFile:
                 year=2018,
                 src_file=None
             )
-        
+
             movie.make_file_name()
-    
+
     def test_make_file_name_res(self, tmp_file):
         title = 'Interstellar'
         year  = 2018
         res = '4k'
-        
+
         movie = MovieFile(
             title=title,
             year=year,
@@ -78,7 +77,7 @@ class TestMovieFile:
         title = 'Interstellar'
         year  = 2018
         audio = 'Eng'
-        
+
         movie = MovieFile(
             title=title,
             year=year,
@@ -93,7 +92,7 @@ class TestMovieFile:
         title = 'Interstellar'
         year  = 2018
         comment = '3D'
-        
+
         movie = MovieFile(
             title=title,
             year=year,
@@ -108,7 +107,7 @@ class TestMovieFile:
         title = 'Interstellar'
         year  = 2018
         ext = '.mkv'
-        
+
         movie = MovieFile(
             title=title,
             year=year,
@@ -124,7 +123,7 @@ class TestMovieFile:
         year  = 2018
         res = '1080p'
         audio = 'Dual'
-        
+
         movie = MovieFile(
             title=title,
             year=year,
@@ -142,7 +141,7 @@ class TestMovieFile:
         res = '1080p'
         audio = 'Dual'
         comment = 'Extended'
-        
+
         movie = MovieFile(
             title=title,
             year=year,
@@ -235,10 +234,10 @@ class TestRenameOrder:
     def test_has_warnings_no_warnings(self, tmp_dir):
         rename_order = RenameOrder(src_dir=tmp_dir)
         assert not rename_order.has_warnings()
-    
+
     def test_has_warnings(self, tmp_dir, tmp_file):
         movie = MovieFile(tmp_file.name, 'Gladiator', 1999)
-        
+
         rename_order = RenameOrder(src_dir=tmp_dir)
         rename_order.dst_existent_movies.append(movie)
 
@@ -256,7 +255,7 @@ class TestRenameOrder:
 
         # Assert no rename operation was executed
         mock_replace.assert_not_called()
-    
+
     @mock.patch('fu.movie.fixname.os.replace')
     def test_apply_not_overwrite(self, mock_replace, tmp_dir, tmp_file):
         gladiator = MovieFile(tmp_file.name, 'Gladiator', 1999)
@@ -268,13 +267,13 @@ class TestRenameOrder:
         rename_order.execute = True
 
         rename_order.apply()
-    
+
         # Assert only interstellar was renamed
         mock_replace.assert_called_once_with(
             tmp_file.name,
             gladiator.make_target_file_path()
         )
-    
+
     @mock.patch('fu.movie.fixname.os.replace')
     def test_apply_overwrite(self, mock_replace, tmp_dir, tmp_file):
         gladiator = MovieFile(tmp_file.name, 'Gladiator', 1999)
@@ -301,7 +300,7 @@ class TestRenameOrder:
                 interstellar.make_target_file_path()
             )
         ]
-    
+
         # Assert both movies were renamed
         mock_replace.assert_has_calls(calls, any_order=False)
 
@@ -361,7 +360,7 @@ class TestRenameOrder:
         # Create a fake movie file
         filepath = os.path.join(tmp_dir, 'Gladiator.mkv')
         open(filepath, 'a').close()
-        
+
         #
         # Prepare mocks return values
 
@@ -385,7 +384,7 @@ class TestRenameOrder:
 
         assert mock_cprint.call_count == 2
         mock_ask.assert_called_once_with('Rename file?')
-        mock_ask_movie_details.assert_called_once_with('Gladiator.mkv')
+        mock_ask_movie_details.assert_called_once_with(filepath)
 
     @mock.patch('fu.movie.fixname.RenameOrder._ask_movie_details')
     @mock.patch('fu.movie.fixname.Confirm.ask')
@@ -400,7 +399,7 @@ class TestRenameOrder:
         # Create a fake movie file
         filepath = os.path.join(tmp_dir, 'Gladiator (2000).mkv')
         open(filepath, 'a').close()
-        
+
         #
         # Prepare mocks return values
 
@@ -424,4 +423,4 @@ class TestRenameOrder:
 
         assert mock_cprint.call_count == 2
         mock_ask.assert_called_once_with('Rename file?')
-        mock_ask_movie_details.assert_called_once_with('Gladiator (2000).mkv')
+        mock_ask_movie_details.assert_called_once_with(filepath)

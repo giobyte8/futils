@@ -3,6 +3,7 @@ import typer
 from fu.imgresize.resizer import resize_images
 from fu.iterate_files import iterate_and_open
 from fu.movie.fixname import rename_movies
+from fu.tvshow.fixname import rename_tvshow_files
 
 
 app = typer.Typer()
@@ -46,6 +47,16 @@ def moviefixname(src_dir: str = typer.Argument(
     """Renames movie files to make them scanners friendly
     """
     rename_movies(src_dir)
+
+def tvshowfixnames(
+    src_dir: str = typer.Argument(
+        "./",
+        help="Directory containing tv show files to rename"
+    )
+):
+    """Renames TV Show episodes files to make them scanners friendly
+    """
+    rename_tvshow_files(src_dir)
 
 
 @app.command()
