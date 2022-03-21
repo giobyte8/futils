@@ -5,14 +5,14 @@ with open('README.md') as readme_file:
 
 setup(
     name='futils',
-    version='1.0.0',
+    version='1.1.0',
     description='A cli tool for managing documents and media files',
     long_description=readme,
     long_description_content_type='text/markdown',
     author='Giovanni Aguirre',
     author_email='giovanni.fi05@gmail.com',
     url='https://github.com/giobyte8/futils',
-    
+
     packages=find_packages(),
     scripts=['fu/futils.py'],
     install_requires=[

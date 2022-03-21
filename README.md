@@ -12,12 +12,15 @@ media files
 * `moviefixname` Assists in the process of renaming movie files into a
    format like `<Title> (Year) - <Resolution> - <Audio Lang> <Extra>.<ext>`.
    Use this for your plex library 😉
+* `tvshowfixnames` Assists in the process of renaming multiple TV show files
+   into a format like `<TV Show title> - S<Season number>E<Episode number>`.
+   Similar to `moviefixname` but for TV show episodes files.
 
 ## Usage
 
 To get details about arguments and usage of each command, use the `help` subprogram
 
-```
+```bash
 fu imgresize --help
 ```
 
@@ -25,7 +28,7 @@ fu imgresize --help
 
 ### Using pip
 
-```
+```bash
 pip install futils
 ```
 
