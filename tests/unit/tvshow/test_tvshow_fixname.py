@@ -38,8 +38,8 @@ def tmp_file():
 class TestTVShowChapter:
     def test_make_file_name(self, tmp_file):
         show = 'Chernobyl'
-        season = '01'
-        chapter = '06'
+        season = 1
+        chapter = 6
 
         tvShowCh = TVShowChapter(
             src_file=tmp_file.name,
@@ -48,15 +48,15 @@ class TestTVShowChapter:
             chapter_number=chapter
         )
 
-        chapter_name = f'{ show } - S{ season }E{ chapter }'
+        chapter_name = f'{ show } - S0{ season }E0{ chapter }'
         assert chapter_name == tvShowCh.make_file_name()
 
     def test_make_file_name_invalid(self):
         with pytest.raises(MissingRequiredDataError):
             tvShowChapter = TVShowChapter(
                 show_title='Random',
-                season_number='5432',
-                chapter_number='45',
+                season_number=5432,
+                chapter_number=45,
                 src_file=None
             )
 
@@ -64,8 +64,8 @@ class TestTVShowChapter:
 
     def test_make_file_name_year(self, tmp_file):
         show = 'Chernobyl'
-        season = '01'
-        chapter = '06'
+        season = 12
+        chapter = 15
         year = 2019
 
         tvShowCh = TVShowChapter(
@@ -81,8 +81,8 @@ class TestTVShowChapter:
 
     def test_make_file_name_ch_title(self, tmp_file):
         show = 'Chernobyl'
-        season = '01'
-        chapter = '06'
+        season = 1
+        chapter = 6
         ch_title = 'Test title'
 
         tvShowCh = TVShowChapter(
@@ -93,13 +93,13 @@ class TestTVShowChapter:
             chapter_title=ch_title
         )
 
-        chapter_name = f'{ show } - S{ season }E{ chapter } - { ch_title }'
+        chapter_name = f'{ show } - S0{ season }E0{ chapter } - { ch_title }'
         assert chapter_name == tvShowCh.make_file_name()
 
     def test_make_file_name_ch_year_title_res(self, tmp_file):
         show = 'Chernobyl'
-        season = '01'
-        chapter = '06'
+        season = 11
+        chapter = 16
         ch_title = 'Test title'
         year = 2019
         resolution = '4K HDR'
@@ -124,8 +124,8 @@ class TestTVShowChapter:
         tvShowCh = TVShowChapter(
             src_file=None,
             show_title='Random',
-            season_number='01',
-            chapter_number='01'
+            season_number=12,
+            chapter_number=12
         )
 
         assert not tvShowCh.is_valid()
@@ -134,8 +134,8 @@ class TestTVShowChapter:
         tvShowCh = TVShowChapter(
             src_file='/invalid/path/file.mp4',
             show_title='Random',
-            season_number='01',
-            chapter_number='01'
+            season_number=12,
+            chapter_number=12
         )
 
         assert not tvShowCh.is_valid()
@@ -144,8 +144,8 @@ class TestTVShowChapter:
         tvShowCh = TVShowChapter(
             src_file=tmp_file.name,
             show_title=None,
-            season_number='01',
-            chapter_number='01'
+            season_number=12,
+            chapter_number=12
         )
 
         assert not tvShowCh.is_valid()
@@ -155,7 +155,7 @@ class TestTVShowChapter:
             src_file=tmp_file.name,
             show_title='Random',
             season_number=None,
-            chapter_number='01'
+            chapter_number=12
         )
 
         assert not tvShowCh.is_valid()
@@ -164,7 +164,7 @@ class TestTVShowChapter:
         tvShowCh = TVShowChapter(
             src_file=tmp_file.name,
             show_title='Random',
-            season_number='01',
+            season_number=12,
             chapter_number=None
         )
 
@@ -174,8 +174,8 @@ class TestTVShowChapter:
         tvShowCh = TVShowChapter(
             src_file=tmp_file.name,
             show_title='Random',
-            season_number='01',
-            chapter_number='01'
+            season_number=12,
+            chapter_number=12
         )
 
         assert tvShowCh.is_valid()
@@ -185,14 +185,14 @@ class TestRenameOrder:
         chapter = TVShowChapter(
             src_file=tmp_file.name,
             show_title='Test title',
-            season_number='01',
-            chapter_number='01'
+            season_number=12,
+            chapter_number=12
         )
         chapter2 = TVShowChapter(
             src_file=tmp_file.name,
             show_title='Test title 2',
-            season_number='01',
-            chapter_number='01'
+            season_number=12,
+            chapter_number=12
         )
 
         rename_order = RenameOrder(src_dir=tmp_dir)
@@ -212,8 +212,8 @@ class TestRenameOrder:
         chapter = TVShowChapter(
             src_file=tmp_file.name,
             show_title='Test title',
-            season_number='01',
-            chapter_number='01'
+            season_number=12,
+            chapter_number=12
         )
 
         rename_order = RenameOrder(src_dir=tmp_dir)
@@ -226,8 +226,8 @@ class TestRenameOrder:
         chapter = TVShowChapter(
             src_file=tmp_file.name,
             show_title='Test title',
-            season_number='01',
-            chapter_number='01'
+            season_number=12,
+            chapter_number=12
         )
 
         rename_order = RenameOrder(src_dir=tmp_dir)
@@ -244,14 +244,14 @@ class TestRenameOrder:
         chapter = TVShowChapter(
             src_file=tmp_file.name,
             show_title='Test title',
-            season_number='01',
-            chapter_number='01'
+            season_number=3,
+            chapter_number=12
         )
         chapter2 = TVShowChapter(
             src_file=tmp_file.name,
             show_title='Test title 2',
-            season_number='01',
-            chapter_number='01'
+            season_number=3,
+            chapter_number=13
         )
 
         rename_order = RenameOrder(src_dir=tmp_dir)
@@ -272,14 +272,14 @@ class TestRenameOrder:
         chapter = TVShowChapter(
             src_file=tmp_file.name,
             show_title='Test title',
-            season_number='01',
-            chapter_number='01'
+            season_number=1,
+            chapter_number=12
         )
         chapter2 = TVShowChapter(
             src_file=tmp_file.name,
             show_title='Test title 2',
-            season_number='01',
-            chapter_number='01'
+            season_number=1,
+            chapter_number=13
         )
 
         rename_order = RenameOrder(src_dir=tmp_dir)
@@ -368,8 +368,8 @@ class TestRenameOrder:
         chapter = TVShowChapter(
             src_file=filepath,
             show_title='Test title',
-            season_number='01',
-            chapter_number='01'
+            season_number=1,
+            chapter_number=1
         )
 
         mock_ask_chapter_details.return_value = chapter
@@ -386,13 +386,7 @@ class TestRenameOrder:
 
         assert mock_cprint.call_count == 2
         mock_ask.assert_called_once_with('Rename file?')
-        mock_ask_chapter_details.assert_called_once_with(
-            filepath,
-            None,
-            None,
-            False,
-            None
-        )
+        mock_ask_chapter_details.assert_called_once()
 
     @mock.patch('fu.tvshow.fixname.RenameOrder._ask_chapter_details')
     @mock.patch('fu.tvshow.fixname.Confirm.ask')
@@ -414,8 +408,8 @@ class TestRenameOrder:
         chapter = TVShowChapter(
             src_file=filepath,
             show_title='The Mandalorian',
-            season_number='01',
-            chapter_number='01'
+            season_number=1,
+            chapter_number=1
         )
 
         mock_ask_chapter_details.return_value = chapter
@@ -432,10 +426,4 @@ class TestRenameOrder:
 
         assert mock_cprint.call_count == 2
         mock_ask.assert_called_once_with('Rename file?')
-        mock_ask_chapter_details.assert_called_once_with(
-            filepath,
-            None,
-            None,
-            False,
-            None
-        )
+        mock_ask_chapter_details.assert_called_once()

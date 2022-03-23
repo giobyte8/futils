@@ -1,6 +1,7 @@
 import os
 
 from dataclasses import dataclass
+from enum import Enum
 from rich.prompt import (
     Confirm,
     IntPrompt,
@@ -26,8 +27,8 @@ class TVShowChapter:
     src_file: str
 
     show_title: str
-    season_number: str
-    chapter_number: str
+    season_number: int
+    chapter_number: int
     chapter_title: str = None
     show_year: int = None
     resolution: str = None
@@ -65,7 +66,15 @@ class TVShowChapter:
         if self.show_year:
             name += f'({ self.show_year }) '
 
-        name += f'- S{ self.season_number }E{ self.chapter_number }'
+        if self.season_number < 10:
+            name += f'- S0{ self.season_number }'
+        else:
+            name += f'- S{ self.season_number }'
+
+        if self.chapter_number < 10:
+            name += f'E0{ self.chapter_number }'
+        else:
+            name += f'E{ self.chapter_number }'
 
         if self.has_extra_info():
             name += ' -'
@@ -77,7 +86,7 @@ class TVShowChapter:
                 name += f' { self.resolution }'
 
             if self.audio_lang:
-                name += f' { self.audio_lang } '
+                name += f' { self.audio_lang }'
 
             if self.comment:
                 name += f' { self.comment }'
@@ -100,6 +109,16 @@ class TVShowChapter:
         file_name = self.make_file_name()
         dir_path = os.path.dirname(self.src_file)
         return os.path.join(dir_path, file_name)
+
+class SharedValuePreference(Enum):
+    """A TV Show is usually composed of several episodes/files,
+    this enum is used to represent user preference regarding if
+    several files should share same value for specific attributes
+    or not
+    """
+    EACH_DIFFERENT = 1
+    ALL_SAME = 2
+    ALL_EMPTY = 3
 
 
 class RenameOrder:
@@ -220,42 +239,76 @@ class RenameOrder:
         console.print(f'Looking for TV Show files in: { self.src_dir }')
 
         global_tvshow_title = None
-        global_season_number = None
-        global_add_tvshow_year = False
-        global_tvshow_year = None
-        files_count = count_path_files(
-            self.src_dir,
-            extensions=_tvshow_formats
-        )
 
+        global_season_pref = SharedValuePreference(1)
+        global_season_number = 0
+
+        global_year_pref = SharedValuePreference(1)
+        global_tvshow_year = None
+
+        global_resolution_pref = SharedValuePreference(1)
+        global_resolution = None
+
+        global_audio_lang_pref = SharedValuePreference(1)
+        global_audio_lang = None
+
+        global_comment_pref = SharedValuePreference(1)
+        global_comment = None
+
+        files_count = count_path_files(self.src_dir, extensions=_tvshow_formats)
         if files_count > 1:
             console.print(f'{ files_count } files were found in given path')
 
-            same_show_files = Confirm.ask(
-                'Does all files belongs to same TV Show?'
-            )
+            same_show_files = Confirm.ask((
+                '\nDoes all files belongs to same TV Show \n'
+                '(You can skip specific files of '
+                'being renamed later if necessary)?'
+            ))
             if same_show_files:
-                global_tvshow_title = Prompt.ask('TV Show title: ')
+                global_tvshow_title = Prompt.ask('TV Show title')
 
-            same_season_files = Confirm.ask(
-                'Does all files belongs to same Season?'
-            )
-            if same_season_files:
-                global_season_number = Prompt.ask(
-                    'Season number (Two digits format)?'
+            # Ask for common info for all chapters files
+            if same_show_files:
+                global_season_pref = self._ask_global_pref(
+                    'season number',
+                    all_empty_allowed=False
+                )
+                global_season_number = self._value_for_global_pref(
+                    'Season number',
+                    global_season_pref,
+                    is_integer=True
                 )
 
-            # Ask for year if all files belongs to same tv show
-            if same_show_files:
-                global_add_tvshow_year = Confirm.ask(
-                    'You want to add same TV Show release year to all found files?'
+                global_year_pref = self._ask_global_pref('release year')
+                global_tvshow_year = self._value_for_global_pref(
+                    'Release year',
+                    global_year_pref,
+                    True
                 )
 
-                if global_add_tvshow_year:
-                    global_tvshow_year = IntPrompt.ask(
-                        'TV Show release year?',
-                        default=0
-                    )
+                global_resolution_pref = self._ask_global_pref(
+                    'resolution (e.g. 1080p, 4k HDR)'
+                )
+                global_resolution = self._value_for_global_pref(
+                    'Resolution (e.g. 1080p, 4k HDR)',
+                    global_resolution_pref
+                )
+
+                global_audio_lang_pref = self._ask_global_pref(
+                    'audio language (e.g. Eng, Lat, Dual, etc)'
+                )
+                global_audio_lang = self._value_for_global_pref(
+                    'Audio language (e.g. Eng, Lat, Dual, etc)',
+                    global_audio_lang_pref
+                )
+
+                global_comment_pref = self._ask_global_pref(
+                    'extra filename info'
+                )
+                global_comment = self._value_for_global_pref(
+                    'Extra filename info',
+                    global_comment_pref
+                )
 
         for ch_file in path_files(self.src_dir, extensions=_tvshow_formats):
             src_file_name = get_file_name(ch_file)
@@ -268,9 +321,16 @@ class RenameOrder:
                 chapter = self._ask_chapter_details(
                     ch_file,
                     global_tvshow_title,
+                    global_season_pref,
                     global_season_number,
-                    global_add_tvshow_year,
-                    global_tvshow_year
+                    global_year_pref,
+                    global_tvshow_year,
+                    global_resolution_pref,
+                    global_resolution,
+                    global_audio_lang_pref,
+                    global_audio_lang,
+                    global_comment_pref,
+                    global_comment
                 )
                 chapter.file_ext = get_file_ext(ch_file)
 
@@ -286,23 +346,93 @@ class RenameOrder:
             else:
                 self.skipped_files.append(src_file_name)
 
+    def _ask_global_pref(
+        self,
+        attr_description:str,
+        all_empty_allowed=True
+    ) -> SharedValuePreference:
+        """When multiple files found during scanning, asks user how an \
+            (possibly shared) attribute value should be handled:       \
+            1. Different value for each file                           \
+            2. Same value for all files                                \
+            3. Leave empty for all files                               \
+
+        Args:
+            attr_description (str): Attribute description as will be    \
+                displayed to end user (year, season number, resolution) \
+            all_empty_allowed (bool, optional): Indicates if 3rd option \
+                (Empty for all files) is allowed on this attribute.     \
+                Defaults to False.
+
+        Returns:
+            SharedValuePreference: User preference regarding attribute
+        """
+        choices = ['1', '2']
+        if all_empty_allowed:
+            choices.append('3')
+
+        console.print()
+        console.print(f'How you want to handle { attr_description }?')
+        console.print(' 1. Different value for each file')
+        console.print(' 2. Same value for all files')
+        if all_empty_allowed:
+            console.print(' 3. Leave empty for all files')
+
+        return SharedValuePreference(IntPrompt.ask(
+            'Enter your choice',
+            choices=choices,
+            default='1'
+        ))
+
+    def _value_for_global_pref(
+        self,
+        attr_description: str,
+        user_pref: SharedValuePreference,
+        is_integer = False
+    ) -> str:
+        if user_pref == SharedValuePreference.EACH_DIFFERENT or \
+            user_pref == SharedValuePreference.ALL_EMPTY:
+            return None
+
+        elif is_integer:
+            return IntPrompt.ask(attr_description)
+        else:
+            return Prompt.ask(attr_description)
+
+
     def _ask_chapter_details(
         self,
         src_file: str,
         global_show_title: str,
-        global_season_number: str,
-        global_add_tvshow_year: bool,
-        global_tvshow_year: int
+
+        global_season_pref: SharedValuePreference,
+        global_season_number: int,
+
+        global_year_pref: SharedValuePreference,
+        global_tvshow_year: int,
+
+        global_resolution_pref: SharedValuePreference,
+        global_resolution: str,
+
+        global_audio_lang_pref: SharedValuePreference,
+        global_audio_lang: str,
+
+        global_comment_pref: SharedValuePreference,
+        global_comment: str
     ) -> TVShowChapter:
         title = global_show_title
         season_num = global_season_number
 
         # Prepare/ask required info
         if not global_show_title:
-            title = Prompt.ask('TV Show title: ')
-        if not global_season_number:
-            season_num = Prompt.ask('Season number (Two digits): ')
-        chapter_num = Prompt.ask('Episode number (Two digits): ')
+            title = Prompt.ask('TV Show title? ')
+
+        if global_season_pref == SharedValuePreference.EACH_DIFFERENT:
+            season_num = IntPrompt.ask('Season number? ')
+        else:
+            season_num = global_season_number
+
+        chapter_num = IntPrompt.ask('Episode number? ')
 
         # Initial chapter instance
         chapter = TVShowChapter(
@@ -312,30 +442,36 @@ class RenameOrder:
             chapter_number=chapter_num
         )
 
-        # Setup/Ask for optional/extra info
-        if global_add_tvshow_year:
-            chapter.show_year = global_tvshow_year
-        else:
-            chapter.show_year = IntPrompt.ask(
-                'Year (Hit enter for leave empty): ',
-                default=0
-            )
         chapter.chapter_title = Prompt.ask(
-            'Episode title (Hit enter for leave empty): ',
+            'Episode title (Hit enter for leave empty)? ',
             default=''
         )
-        chapter.resolution = Prompt.ask(
-            'Resolution (eg: 720p|1080p|4k) [Hit enter for leave empty]: ',
-            default=''
-        )
-        chapter.audio_lang = Prompt.ask(
-            'Language (eg: Eng|Lat|Dual) [Hit enter for leave empty]: ',
-            default=''
-        )
-        chapter.comment = Prompt.ask(
-            'Extra data (eg: HDR|Extended|3D) [Hit enter for leave empty]: ',
-            default=''
-        )
+
+        if global_year_pref == SharedValuePreference.EACH_DIFFERENT:
+            chapter.show_year = IntPrompt.ask('Release year? ')
+        elif global_year_pref == SharedValuePreference.ALL_SAME:
+            chapter.show_year = global_tvshow_year
+
+        if global_resolution_pref == SharedValuePreference.EACH_DIFFERENT:
+            chapter.resolution = IntPrompt.ask(
+                'Resolution (e.g. 1080p, 4k HDR)? '
+            )
+        elif global_resolution_pref == SharedValuePreference.ALL_SAME:
+            chapter.resolution = global_resolution
+
+        if global_audio_lang_pref == SharedValuePreference.EACH_DIFFERENT:
+            chapter.audio_lang = Prompt.ask(
+                'Audio language (e.g. Eng, Lat, Dual)? '
+            )
+        elif global_audio_lang_pref == SharedValuePreference.ALL_SAME:
+            chapter.audio_lang = global_audio_lang
+
+        if global_comment_pref == SharedValuePreference.EACH_DIFFERENT:
+            chapter.comment = Prompt.ask(
+                'Extra filename info (e.g. Extended, 3D)? '
+            )
+        elif global_comment_pref == SharedValuePreference.ALL_SAME:
+            chapter.comment = global_comment
 
         return chapter
 
