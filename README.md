@@ -9,6 +9,8 @@ media files
   'cover' css, useful for wallpapers and background images management
 * `iterate` Iterates files in a path and opens it in default application,
    useful for review pictures or multiple docs in a folder
+* `iteratefrom` Iterates each line of given file as a path and will open
+   it in default system program.
 * `moviefixname` Assists in the process of renaming movie files into a
    format like `<Title> (Year) - <Resolution> - <Audio Lang> <Extra>.<ext>`.
    Use this for your plex library 😉
