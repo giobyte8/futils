@@ -1,13 +1,7 @@
 import os
 from pathlib import Path
 
-
-class InvalidPathError(Exception):
-    pass
-
-
-class DirectoryAlreadyExistsError(Exception):
-    pass
+from fu.common.errors import InvalidPathError
 
 
 def get_file_name(path: str, include_extension=True) -> str:

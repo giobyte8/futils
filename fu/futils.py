@@ -1,7 +1,7 @@
 import typer
 
 from fu.imgresize.resizer import resize_images
-from fu.iterate_files import iterate_and_open
+from fu.iterate_files import iterate_and_open, iterate_from_file
 from fu.movie.fixname import rename_movies
 from fu.tvshow.fixname import rename_tvshow_files
 
@@ -77,6 +77,27 @@ def iterate(
     in default system application
     """
     iterate_and_open(path, step)
+
+@app.command()
+def iteratefrom(
+    path: str = typer.Argument(
+        ...,
+        help='Path to file containing the paths to iterate'
+    ),
+    step: int = typer.Option(
+        1,
+        '--step',
+        '-s',
+        help='Number of files to open at a time'
+    )
+):
+    """Will iterate each line of given file as a path
+    and will open it in default system program.
+
+    Empty lines or lines starting with '#' will be
+    ignored.
+    """
+    iterate_from_file(path, step)
 
 
 if __name__ == "__main__":
