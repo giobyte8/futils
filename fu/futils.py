@@ -1,5 +1,6 @@
 import typer
 
+from fu.exif import inspect_datetime
 from fu.imgresize.resizer import resize_images
 from fu.iterate_files import iterate_and_open, iterate_from_file
 from fu.movie.fixname import rename_movies
@@ -98,6 +99,24 @@ def iteratefrom(
     ignored.
     """
     iterate_from_file(path, step)
+
+
+@app.command()
+def exif(
+    path: str = typer.Argument(
+        ...,
+        help='Path to directory containing images to inspect'
+    ),
+    step: int = typer.Option(
+        100,
+        '--page-size',
+        '-p',
+        help='How many images inspect at a time'
+    )
+):
+    """Will inspect exif date for all images found at given directory
+    """
+    inspect_datetime.inspect_dir(path, step)
 
 
 if __name__ == "__main__":
