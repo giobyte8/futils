@@ -44,8 +44,7 @@ def iterate_from_file(path: str, step: int = 1) -> None:
     """Will iterate each line of given file as a path \
     and will open it in default system program.       \
                                                       \
-    If line starts with '#' it will be ignored.       \
-    av c 240 (602) 06700
+    If line starts with '#' it will be ignored.
 
     Args:
         path (str): Path to file containing paths to iterate
