@@ -15,7 +15,11 @@
 git clone https://github.com/giobyte8/futils
 cd futils
 
-# Initialize python virtual env through pyenv
+# Initialize python virtual env (Python >= 3.3)
+python -m venv venv
+source venv/bin/acticate
+
+# Alternatively you can use pyenv
 pyenv virtualenv 3.7.7 futils
 pyenv local futils
 
