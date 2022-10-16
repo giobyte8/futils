@@ -1,6 +1,9 @@
 import os
+import typer
 from exif import Image
+from rich.prompt import Confirm
 from rich.table import Table
+from fu.common.errors import InvalidPathError
 from fu.utils.path import path_files
 from fu.utils.console import console
 
@@ -90,14 +93,66 @@ def inspect_dir(path: str, step: int = 100) -> None:
     console.print(meta_table)
 
 
-def inspect_from_file(filepath: str, pause_by_file=False) -> None:
+def inspect_from_file(filepath: str, step=1, display_img=False) -> None:
     """Inspect metadata for every file path provided at given \
         file. Each line of file (non empty and not starting with '#') \
         will be read as a file path.
 
     Args:
-        filepath (str): Path to file with paths to inspect
-        pause_by_file (bool, optional): If should inspect one file at a time.\
-            Defaults to False.
+        filepath (str): Path to file with paths to inspect.
+        step (int): Indicates how many images (lines) inspect at a time.
+        display_img (bool, optional): If images should be open in default \
+            system viewer. Defaults to False.
     """
-    pass
+    if not os.path.isfile(filepath):
+        console.print(
+            f'Path is not a valid file: { filepath }',
+            style='error')
+        raise InvalidPathError()
+
+    meta_table = _empty_exif_table()
+
+    with open(filepath) as pathsfile:
+        curr_open_count = 0
+
+        for filepath in pathsfile:
+            filepath = filepath.strip("\n")
+
+            if filepath and not filepath.startswith('#'):
+
+                # Read exif metadata
+                with open(filepath, 'rb') as raw_img:
+                    img = ExifImage(Image(raw_img))
+
+                    meta_table.add_row(
+                        os.path.basename(filepath),
+                        img.datetime,
+                        img.datetime_original,
+                        img.datetime_digitized)
+
+                # Open image in system viewer if required by user
+                if display_img:
+                    typer.launch(filepath)
+
+                curr_open_count += 1
+
+                # Pause opening files if step has been reached
+                if curr_open_count == step:
+                    console.print(meta_table)
+                    meta_table = _empty_exif_table()
+
+                    curr_open_count = 0
+                    if not Confirm.ask('Open next {} file(s)'.format(step)):
+                        break
+
+        if curr_open_count > 0:
+            console.print(meta_table)
+
+def _empty_exif_table() -> Table:
+    meta_table = Table()
+    meta_table.add_column('Filename')
+    meta_table.add_column('Datetime')
+    meta_table.add_column('Original datetime')
+    meta_table.add_column('Digitalized datetime')
+
+    return meta_table
