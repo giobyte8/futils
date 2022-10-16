@@ -23,20 +23,41 @@ class ExifImage:
 
     @property
     def datetime(self):
+        """Time when the file was created. \
+            \
+            In a digital camera, usually is the same time the image \
+            was taken.\
+            \
+            If the image was edited, this could be the time the new \
+            file (edited version) was created.
+
+        Returns:
+            datetime: Date and time of file creation
+        """
         if self.has_datetime():
             return self.img.datetime
         return None
 
     @property
-    def datetime_digitized(self):
-        if self.has_datetime_digitized():
-            return self.img.datetime_digitized
+    def datetime_original(self):
+        """Time when the image was taken
+
+        Returns:
+            datetime: Date and time when image was captured
+        """
+        if self.has_datetime_original():
+            return self.img.datetime_original
         return None
 
     @property
-    def datetime_original(self):
-        if self.has_datetime_original():
-            return self.img.datetime_original
+    def datetime_digitized(self):
+        """Time when image was digitalized, e.g. the moment it was scanned
+
+        Returns:
+            datetime: Date and time when image was digitalized
+        """
+        if self.has_datetime_digitized():
+            return self.img.datetime_digitized
         return None
 
 
@@ -52,7 +73,7 @@ def inspect_dir(path: str, step: int = 100) -> None:
     """
     meta_table = Table()
     meta_table.add_column('Filename')
-    meta_table.add_column('Datetime')
+    meta_table.add_column('File creation time')
     meta_table.add_column('Original datetime')
     meta_table.add_column('Digitalized datetime')
 
