@@ -1,6 +1,7 @@
 import typer
 
 from fu.imgresize.resizer import resize_images
+from fu.index import idx_svc
 from fu.iterate_files import iterate_and_open, iterate_from_file
 from fu.movie.fixname import rename_movies
 from fu.tvshow.fixname import rename_tvshow_files
@@ -102,6 +103,53 @@ def iteratefrom(
     ignored.
     """
     iterate_from_file(path, step)
+
+@app.command()
+def index(
+    path: str = typer.Argument(
+        ...,
+        help='Directory to index'
+    ),
+    output: str = typer.Option(
+        None,
+        '--output',
+        '-o',
+        help=(
+            'Name for generated index file. '
+            'Defaults to "idx-<date>-<time>-<microseconds>.txt"'
+        )
+    )
+):
+    """Creates a text file listing all files at given path
+        in ascending order. Only direct children files.
+    """
+    idx_svc.index_dir(path, output)
+
+
+@app.command('index-removed')
+def index_removed(
+    idx: str = typer.Argument(
+        ...,
+        help='Index of files to verify in specified path'
+    ),
+    path: str = typer.Argument(
+        ...,
+        help='Where to look for files in index'
+    ),
+    output: str = typer.Option(
+        None,
+        '--output',
+        '-o',
+        help=(
+            'Name for generated index file of not found '
+            'items. Defaults to "idx-removed-<date>-<time>-<microseconds>.txt"'
+        )
+    )
+):
+    """Creates a text file listing all files that are present in a given
+        index but doesn't exists in specified path anymore.
+    """
+    idx_svc.index_deleted_from(path, idx, output)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ with open('README.md') as readme_file:
 
 setup(
     name='futils',
-    version='1.2.0',
+    version='1.3.0',
     description='A cli tool for managing documents and media files',
     long_description=readme,
     long_description_content_type='text/markdown',
@@ -18,7 +18,7 @@ setup(
     install_requires=[
         'python-resize-image==1.1.19',
         'typer==0.3.2',
-        'rich==10.0.0'
+        'rich==13.0.1'
     ],
     entry_points={
         'console_scripts': [

@@ -2,7 +2,7 @@
 class InvalidPathError(Exception):
     pass
 
-class DirectoryAlreadyExistsError(Exception):
+class PathAlreadyExistsError(Exception):
     pass
 
 class MissingRequiredDataError(Exception):

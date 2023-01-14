@@ -46,6 +46,18 @@ def is_dir(path: str) -> bool:
     return os.path.exists(path) and os.path.isdir(path)
 
 
+def is_file(path: str) -> bool:
+    """Test whether given path exists as a regular file
+
+    Args:
+        path (str): Path to verify
+
+    Returns:
+        bool: true if file exists
+    """
+    return os.path.exists(path) and os.path.isfile(path)
+
+
 def path_files(path: str, extensions = []):
     """
     Creates a generator to iterate each file in provided
@@ -56,7 +68,7 @@ def path_files(path: str, extensions = []):
 
     :param path: Directory path
     :param extensions: If value is provided, only files
-        with that extensions will be yield
+        with those extensions will be yield
     """
     if not is_dir(path):
         raise InvalidPathError()

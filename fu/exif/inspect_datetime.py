@@ -74,11 +74,7 @@ def inspect_dir(path: str, step: int = 100) -> None:
         step (int, optional): How many files inspect at a time. \
             Defaults to 1.
     """
-    meta_table = Table()
-    meta_table.add_column('Filename')
-    meta_table.add_column('File creation time')
-    meta_table.add_column('Original datetime')
-    meta_table.add_column('Digitalized datetime')
+    meta_table = _empty_exif_table()
 
     for img_path in path_files(path, _IMG_EXTENSIONS):
         with open(img_path, 'rb') as r_img:
@@ -151,7 +147,7 @@ def inspect_from_file(filepath: str, step=1, display_img=False) -> None:
 def _empty_exif_table() -> Table:
     meta_table = Table()
     meta_table.add_column('Filename')
-    meta_table.add_column('Datetime')
+    meta_table.add_column('File creation time')
     meta_table.add_column('Original datetime')
     meta_table.add_column('Digitalized datetime')
 

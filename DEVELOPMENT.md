@@ -57,5 +57,6 @@ pytest
 ## Relase new version
 
 1. Update version number in `setup.py` file
+2. (Optional) Update `install_requires` array in `setup.py`
 2. Create sources distribution with `python setup.py sdist`
 3. Upload through `twine upload dist/futils-<version>.tar.gz`
