@@ -5,7 +5,7 @@ with open('README.md') as readme_file:
 
 setup(
     name='futils',
-    version='1.3.1',
+    version='1.3.2',
     description='A cli tool for managing documents and media files',
     long_description=readme,
     long_description_content_type='text/markdown',

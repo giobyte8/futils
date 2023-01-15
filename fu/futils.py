@@ -152,5 +152,31 @@ def index_removed(
     idx_svc.index_deleted_from(path, idx, output)
 
 
+@app.command('rm-indexed')
+def remove_indexed(
+    idx: str = typer.Argument(
+        ...,
+        help=(
+            'Index of files to remove from path, each line is considered '
+            'a different file, empty lines or lines starting with "#" '
+            'are ignored.'
+        )
+    ),
+    path: str = typer.Argument(
+        ...,
+        help='Path containing files to delete'
+    ),
+    verbose: bool = typer.Option(
+        False,
+        '--verbose',
+        '-v',
+        help='If true, will log each deleted/skipped file'
+    )
+):
+    """Permanently removes all files listed in a given index
+    """
+    idx_svc.remove_indexed(idx, path, verbose)
+
+
 if __name__ == "__main__":
     app()

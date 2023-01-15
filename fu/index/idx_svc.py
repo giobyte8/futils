@@ -137,3 +137,54 @@ def index_deleted_from(path: str, idx: str, output: str = None) -> None:
         console.print(
             f'Index of removed files saved at { output }',
             style='info')
+
+
+def remove_indexed(idx: str, path: str, verbose: bool = False) -> None:
+    """Permanently removes all files listed in a given index
+
+    Args:
+        idx (str): Index of files to remove from path, each line is    \
+            considered a different file, empty lines or lines starting \
+            with '#' are ignored.
+        path (str): Path containing files to delete
+        verbose (bool): If true, will log each deleted/skipped file
+    """
+    if not is_file(idx):
+        console.print(
+            f'Invalid index file: { idx }',
+            style='error')
+        return
+
+    if not is_dir(path):
+        console.print(
+            f'Invalid path: { path }',
+            style='error')
+        return
+
+    with open(idx, 'r') as idx_file:
+        deletes_count = 0
+
+        for idx_line in idx_file:
+            idx_line = idx_line.strip("\n")
+
+            # Ignore empty lines and comments
+            if idx_line and not idx_line.startswith('#'):
+                indexed_file = os.path.join(path, idx_line)
+
+                # Verify file existence and remove
+                if is_file(indexed_file):
+                    if verbose:
+                        console.print(
+                            f'Removing: { indexed_file }',
+                            style='info')
+                    os.remove(indexed_file)
+                    deletes_count += 1
+
+                elif verbose:
+                    console.print(
+                        f'Skipping missing file: { indexed_file }',
+                        style='warning')
+
+        console.print(
+            f'{ deletes_count } files were removed',
+            style='info')
