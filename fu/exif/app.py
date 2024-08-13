@@ -1,26 +1,21 @@
 import typer
 from fu.exif import inspect_datetime
+from .ls import ls_datetime
 
 
 app = typer.Typer()
 
 
 @app.command()
-def inspect(
+def ls(
     path: str = typer.Argument(
         ...,
-        help='Path to directory containing images to inspect'
-    ),
-    step: int = typer.Option(
-        100,
-        '--page-size',
-        '-p',
-        help='How many images inspect at a time'
+        help='Path to inspect'
     )
 ):
-    """Display exif date for all images found at given directory
+    """List all image files and its exif dates in a given directory
     """
-    inspect_datetime.inspect_dir(path, step)
+    ls_datetime(path)
 
 
 @app.command('inspect-from-pathsfile')

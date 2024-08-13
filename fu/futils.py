@@ -6,7 +6,7 @@ from fu.iterate_files import iterate_and_open, iterate_from_file
 from fu.movie.fixname import rename_movies
 from fu.tvshow.fixname import rename_tvshow_files
 
-from fu.exif import exif_app
+from fu.exif import app as exif_app
 
 
 app = typer.Typer()
