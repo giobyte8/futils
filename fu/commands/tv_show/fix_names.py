@@ -246,11 +246,32 @@ class FixNamesCmd(Command):
             self.logger.info('No files to rename')
             return None
 
-        # TODO Execute
+        # TODO Validate if two or more episodes will have same target name
+
         if self.exec_mode == CmdExecMode.ABORT:
             return None
-        elif self.exec_mode == CmdExecMode.OVERRIDE_FORBIDDEN:
-            pass
+
+        elif self.exec_mode in [
+            CmdExecMode.OVERRIDE_FORBIDDEN,
+            CmdExecMode.APPLY_ALL
+        ]:
+            # Rename safe episodes
+            for episode in self.episodes:
+                os.replace(
+                    episode.src_file,
+                    episode.make_target_file_path()
+                )
+
+            # Rename files in conflict
+            if self.exec_mode == CmdExecMode.APPLY_ALL:
+                for episode in self.dst_existent_episodes:
+                    os.replace(
+                        episode.src_file,
+                        episode.make_target_file_path()
+                    )
+
+            self.logger.info('Rename operations are complete')
+
 
     def _preview(self) -> None:
         """Prints a nice preview of each found file and its target name"""
