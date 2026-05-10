@@ -7,10 +7,12 @@ from fu.movie.fixname import rename_movies
 from fu.tvshow.fixname import rename_tvshow_files
 
 from fu.exif import app as exif_app
+from fu.commands.tv_show import app as tvshow_app
 
 
 app = typer.Typer()
 app.add_typer(exif_app.app, name='exif')
+app.add_typer(tvshow_app.app, name='tv-show')
 
 
 @app.command()
