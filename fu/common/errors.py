@@ -13,3 +13,11 @@ class MissingRequiredDataError(Exception):
         Exception (Exception): Python base exception
     """
     pass
+
+
+class ConfigError(Exception):
+    pass
+
+
+class ConfigKeyMissingError(ConfigError):
+    pass

@@ -19,7 +19,8 @@ setup(
         'exif==1.0.4',
         'python-resize-image==1.1.19',
         'rich==13.0.1',
-        'typer==0.3.2'
+        'typer==0.3.2',
+        'platformdirs==4.9.6'
     ],
     entry_points={
         'console_scripts': [
