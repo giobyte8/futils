@@ -11,22 +11,28 @@ fu [OPTIONS] COMMAND [ARGS]...
 
 ### Available commands
 
+* `config` View, initialize, or edit application configuration.
 * `imgresize` Resize images to smaller resolutions applying same effect as
-  'cover' css, useful for wallpapers and background images management
+  'cover' css, useful for wallpapers and background images management.
 * `index`: Creates a text file listing all files at given path in ascending
    order. Only direct children files.
 * `index-removed`: Creates a text file listing all files that are present in
    a given index but doesn't exists in specified path anymore.
 * `iterate` Iterates files in a path and opens it in default application,
-   useful for review pictures or multiple docs in a folder
+   useful for review pictures or multiple docs in a folder.
 * `iteratefrom` Iterates each line of given file as a path and will open
    it in default system program.
-* `moviefixname` Assists in the process of renaming movie files into a
-   format like `<Title> (Year) - <Resolution> - <Audio Lang> <Extra>.<ext>`.
-   Use this for your plex library 😉
-* `tvshowfixnames` Assists in the process of renaming multiple TV show files
-   into a format like `<TV Show title> - S<Season number>E<Episode number>`.
-   Similar to `moviefixname` but for TV show episodes files.
+* `rm-indexed` Permanently removes all files listed in a given index.
+
+#### Sub-apps
+
+* `exif` EXIF-related commands (e.g. `fu exif ls`).
+* `movie` Movie file commands:
+  * `fix-name` Assists in renaming movie files into a scanner-friendly format:
+    `<Title> (Year) - <Resolution> <Audio Lang> <Extra>.<ext>`. Great for Plex 😉
+* `tv-show` TV show file commands:
+  * `fix-names` Assists in renaming TV show episode files into a format like
+    `<Show title> (Year) - S<Season>E<Episode> - <Title> <Resolution>.<ext>`.
 
 ### Usage details for each subcommand
 
