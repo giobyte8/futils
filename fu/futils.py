@@ -81,17 +81,6 @@ def moviefixname(src_dir: str = typer.Argument(
     """
     rename_movies(src_dir)
 
-@app.command()
-def tvshowfixnames(
-    src_dir: str = typer.Argument(
-        "./",
-        help="Directory containing tv show files to rename"
-    )
-):
-    """Renames TV Show files to make them scanners friendly
-    """
-    rename_tvshow_files(src_dir)
-
 
 @app.command()
 def iterate(
