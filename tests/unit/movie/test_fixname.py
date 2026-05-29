@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest import mock
 
 from fu.common.errors import MissingRequiredDataError
-from fu.movie.fixname import MovieFile, RenameOrder
+from fu.commands.movie.fix_name import MovieFile, RenameOrder
 
 
 @pytest.fixture
@@ -243,7 +243,7 @@ class TestRenameOrder:
 
         assert rename_order.has_warnings()
 
-    @mock.patch('fu.movie.fixname.os.replace')
+    @mock.patch('fu.commands.movie.fix_name.os.replace')
     def test_apply_non_approved(self, mock_replace, tmp_dir, tmp_file):
         movie = MovieFile(tmp_file.name, 'Gladiator', 1999)
 
@@ -256,7 +256,7 @@ class TestRenameOrder:
         # Assert no rename operation was executed
         mock_replace.assert_not_called()
 
-    @mock.patch('fu.movie.fixname.os.replace')
+    @mock.patch('fu.commands.movie.fix_name.os.replace')
     def test_apply_not_overwrite(self, mock_replace, tmp_dir, tmp_file):
         gladiator = MovieFile(tmp_file.name, 'Gladiator', 1999)
         interstellar = MovieFile(tmp_file.name, 'Interstellar', 2018)
@@ -274,7 +274,7 @@ class TestRenameOrder:
             gladiator.make_target_file_path()
         )
 
-    @mock.patch('fu.movie.fixname.os.replace')
+    @mock.patch('fu.commands.movie.fix_name.os.replace')
     def test_apply_overwrite(self, mock_replace, tmp_dir, tmp_file):
         gladiator = MovieFile(tmp_file.name, 'Gladiator', 1999)
         interstellar = MovieFile(tmp_file.name, 'Interstellar', 2018)
@@ -305,7 +305,7 @@ class TestRenameOrder:
         mock_replace.assert_has_calls(calls, any_order=False)
 
     @mock.patch('fu.utils.path.get_file_name')
-    @mock.patch('fu.movie.fixname.console.print')
+    @mock.patch('fu.commands.movie.fix_name.console.print')
     def test_scan_src_dir_empty_dir(
         self,
         mock_cprint,
@@ -320,9 +320,9 @@ class TestRenameOrder:
         )
         mock_get_file_name.assert_not_called()
 
-    @mock.patch('fu.movie.fixname.RenameOrder._ask_movie_details')
-    @mock.patch('fu.movie.fixname.Confirm.ask')
-    @mock.patch('fu.movie.fixname.console.print')
+    @mock.patch('fu.commands.movie.fix_name.RenameOrder._ask_movie_details')
+    @mock.patch('fu.commands.movie.fix_name.Confirm.ask')
+    @mock.patch('fu.commands.movie.fix_name.console.print')
     def test_scan_src_single_movie_unapproved(
         self,
         mock_cprint,
@@ -347,9 +347,9 @@ class TestRenameOrder:
         mock_ask.assert_called_once_with('Rename file?')
         mock_ask_movie_details.assert_not_called()
 
-    @mock.patch('fu.movie.fixname.RenameOrder._ask_movie_details')
-    @mock.patch('fu.movie.fixname.Confirm.ask')
-    @mock.patch('fu.movie.fixname.console.print')
+    @mock.patch('fu.commands.movie.fix_name.RenameOrder._ask_movie_details')
+    @mock.patch('fu.commands.movie.fix_name.Confirm.ask')
+    @mock.patch('fu.commands.movie.fix_name.console.print')
     def test_scan_src_single_movie_approved(
         self,
         mock_cprint,
@@ -386,9 +386,9 @@ class TestRenameOrder:
         mock_ask.assert_called_once_with('Rename file?')
         mock_ask_movie_details.assert_called_once_with(filepath)
 
-    @mock.patch('fu.movie.fixname.RenameOrder._ask_movie_details')
-    @mock.patch('fu.movie.fixname.Confirm.ask')
-    @mock.patch('fu.movie.fixname.console.print')
+    @mock.patch('fu.commands.movie.fix_name.RenameOrder._ask_movie_details')
+    @mock.patch('fu.commands.movie.fix_name.Confirm.ask')
+    @mock.patch('fu.commands.movie.fix_name.console.print')
     def test_scan_src_existent_movie(
         self,
         mock_cprint,
