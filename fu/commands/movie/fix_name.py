@@ -234,7 +234,7 @@ class RenameOrder:
             '[Language (eg: Eng|Lat|Dual)]: ',
             default=''
         )
-        movie.extra = Prompt.ask(
+        movie.extra_comment = Prompt.ask(
             '[Extra data (eg: HDR|Extended|3D)]: ',
             default=''
         )
